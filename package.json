@@ -5,7 +5,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "dbpush": "npx prisma db push && npx prisma studio",
+    "dbpush": "npx prisma db push",
+    "dbstd": "npx prisma studio",
     "dbgen": "npx prisma format && npx prisma generate",
     "postinstall": "prisma generate",
     "lint": "next lint",
