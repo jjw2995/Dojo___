@@ -1,6 +1,6 @@
 // components/layouts/protectedLayouts.tsx
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
@@ -45,5 +45,19 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
 
   // if the user is authorized, render the page
   // otherwise, render nothing while the router redirects him to the login page
-  return authorized ? <div>{children}</div> : <></>;
+  return authorized ? (
+    <div>
+      <button
+        className="outline"
+        onClick={() => {
+          signOut();
+        }}
+      >
+        sign out
+      </button>
+      {children}
+    </div>
+  ) : (
+    <></>
+  );
 };
