@@ -17,7 +17,7 @@ const Home: NextPage = () => {
         <meta name="description" content="for servers, made by a server" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center bg-slate-200">
         {sessionData ? (
           <>
             <button
@@ -27,6 +27,7 @@ const Home: NextPage = () => {
             >
               sign out
             </button>
+            <div className="bg-slate-300">sd</div>
           </>
         ) : (
           <div>
