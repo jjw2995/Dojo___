@@ -25,10 +25,12 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
 
   useEffect(() => {
     // check if the session is loading or the router is not ready
+    // console.log(router);
     if (loading || !router.isReady) return;
 
     // if the user is not authorized, redirect to the login page
     // with a return url to the current page
+
     if (unAuthorized) {
       console.log("not authorized");
       router.push({
@@ -47,6 +49,7 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
   // otherwise, render nothing while the router redirects him to the login page
   return authorized ? (
     <div>
+      layout
       <button
         className="outline"
         onClick={() => {

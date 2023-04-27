@@ -22,23 +22,36 @@ model Bistro {
   placeId    String
   tipForms   TipForm[]
   BistroUser BistroUser[]
+
+  @@unique([placeId])
+}
+
+enum Authority {
+  MODERATOR
+  USER
 }
 
 model BistroUser {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   bistroId  String
   userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  bistro    Bistro   @relation(fields: [bistroId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  // authority enum[super, manager, user]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bistro    Bistro    @relation(fields: [bistroId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  authority Authority
   Tip       Tip[]
 
-  roles Role[]
-  // Role      Role[]    @relation(fields: [], references: [name])
+  positions Position[]
 
   @@unique([bistroId, userId])
+}
+
+model Position {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  BistroUser   BistroUser? @relation(fields: [bistroUserId], references: [id])
+  bistroUserId String?
 }
 
 model TipForm {
@@ -63,12 +76,6 @@ model Tip {
   bistroUser   BistroUser @relation(fields: [bistroUserId], references: [id])
 
   @@unique([date, tipFormId, bistroUserId])
-}
-
-model Role {
-  name         String      @id @unique
-  BistroUser   BistroUser? @relation(fields: [bistroUserId], references: [id])
-  bistroUserId String?
 }
 
 model User {

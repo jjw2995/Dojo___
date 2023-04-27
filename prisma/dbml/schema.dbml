@@ -8,7 +8,7 @@ Table Bistro {
   updatedAt DateTime [not null]
   name String [not null]
   address String
-  placeId String [not null]
+  placeId String [unique, not null]
   tipForms TipForm [not null]
   BistroUser BistroUser [not null]
 }
@@ -21,12 +21,20 @@ Table BistroUser {
   updatedAt DateTime [not null]
   bistro Bistro [not null]
   user User [not null]
+  authority Authority [not null]
   Tip Tip [not null]
-  roles Role [not null]
+  positions Position [not null]
 
   indexes {
     (bistroId, userId) [unique]
   }
+}
+
+Table Position {
+  id Int [pk, increment]
+  name String [unique, not null]
+  BistroUser BistroUser
+  bistroUserId String
 }
 
 Table TipForm {
@@ -49,12 +57,6 @@ Table Tip {
   indexes {
     (date, tipFormId, bistroUserId) [unique]
   }
-}
-
-Table Role {
-  name String [pk]
-  BistroUser BistroUser
-  bistroUserId String
 }
 
 Table User {
@@ -106,17 +108,22 @@ Table VerificationToken {
   }
 }
 
-Ref: BistroUser.bistroId > Bistro.id
+Enum Authority {
+  MODERATOR
+  USER
+}
 
-Ref: BistroUser.userId > User.id
+Ref: BistroUser.bistroId > Bistro.id [delete: Cascade]
+
+Ref: BistroUser.userId > User.id [delete: Cascade]
+
+Ref: Position.bistroUserId > BistroUser.id
 
 Ref: TipForm.bistroId > Bistro.id
 
 Ref: Tip.tipFormId > TipForm.id
 
 Ref: Tip.bistroUserId > BistroUser.id
-
-Ref: Role.bistroUserId > BistroUser.id
 
 Ref: Account.userId > User.id [delete: Cascade]
 

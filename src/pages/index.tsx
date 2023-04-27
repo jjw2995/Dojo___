@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { Input } from "components/ui/input";
 
 const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -27,13 +28,13 @@ const Home: NextPage = () => {
             >
               sign out
             </button>
-            <div className="bg-slate-300">sd</div>
           </>
         ) : (
           <div>
             <button
               onClick={() => {
-                signIn("google");
+                // signIn("google");
+                signIn("google", { callbackUrl: "/bistro" });
               }}
             >
               Sign in with Google

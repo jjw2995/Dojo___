@@ -16,14 +16,15 @@
     "jsx": "preserve",
     "incremental": true,
     "noUncheckedIndexedAccess": true,
+    // "baseUrl": ".",
+    // "paths": {
+    //   "~/*": ["./src/*"]
+    // }
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
+      // "@/*": ["./src/*"]
     }
-    // "baseUrl": ".",
-    // "paths": {
-    //   "@/*": ["./*"]
-    // }
   },
   "include": [
     ".eslintrc.cjs",
@@ -31,7 +32,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.cjs",
-    "**/*.mjs"
+    "**/*.mjs",
+    "src/pages/bistro/[bistroId]"
   ],
   "exclude": ["node_modules"]
 }
