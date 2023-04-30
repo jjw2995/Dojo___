@@ -4,13 +4,14 @@
 
 Table Bistro {
   id String [pk]
+  placeId String [unique, not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   name String [not null]
   address String
-  placeId String [unique, not null]
   tipForms TipForm [not null]
   BistroUser BistroUser [not null]
+  Position Position [not null]
 }
 
 Table BistroUser {
@@ -22,7 +23,7 @@ Table BistroUser {
   bistro Bistro [not null]
   user User [not null]
   authority Authority [not null]
-  Tip Tip [not null]
+  tipContribution TipContribution [not null]
   positions Position [not null]
 
   indexes {
@@ -30,33 +31,44 @@ Table BistroUser {
   }
 }
 
-Table Position {
-  id Int [pk, increment]
-  name String [unique, not null]
-  BistroUser BistroUser
-  bistroUserId String
-}
-
 Table TipForm {
   id String [pk]
-  bistroId String
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  bistro Bistro
+  bistroId String [not null]
+  bistro Bistro [not null]
+  formula Json [not null]
   Tip Tip [not null]
 }
 
 Table Tip {
+  id String [pk]
   tipFormId String [not null]
-  bistroUserId String [not null]
-  updatedAt DateTime [not null]
   date DateTime [not null]
   tipForm TipForm [not null]
-  bistroUser BistroUser [not null]
 
   indexes {
-    (date, tipFormId, bistroUserId) [unique]
+    (date, tipFormId) [unique]
   }
+}
+
+Table Position {
+  id String [pk]
+  bistroUserId String
+  bistroId String [not null]
+  name String [not null]
+  tipPercent Json [not null]
+  bistro Bistro [not null]
+  BistroUser BistroUser
+  TipContribution TipContribution [not null]
+}
+
+Table TipContribution {
+  id String [pk]
+  bistroUserId String [not null]
+  positionId String [not null]
+  date DateTime [not null]
+  bistroUser BistroUser [not null]
+  percent Int [not null, default: 100]
+  position Position [not null]
 }
 
 Table User {
@@ -117,13 +129,17 @@ Ref: BistroUser.bistroId > Bistro.id [delete: Cascade]
 
 Ref: BistroUser.userId > User.id [delete: Cascade]
 
-Ref: Position.bistroUserId > BistroUser.id
-
 Ref: TipForm.bistroId > Bistro.id
 
 Ref: Tip.tipFormId > TipForm.id
 
-Ref: Tip.bistroUserId > BistroUser.id
+Ref: Position.bistroId > Bistro.id
+
+Ref: Position.bistroUserId > BistroUser.id
+
+Ref: TipContribution.bistroUserId > BistroUser.id
+
+Ref: TipContribution.positionId > Position.id
 
 Ref: Account.userId > User.id [delete: Cascade]
 

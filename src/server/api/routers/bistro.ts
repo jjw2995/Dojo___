@@ -7,14 +7,6 @@ import {
 } from "~/server/api/trpc";
 
 export const bistroRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.bistro.findMany();
   }),
@@ -32,7 +24,7 @@ export const bistroRouter = createTRPCRouter({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ bistroId: z.string() }))
+    .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input: { bistroId } }) => {
       // ctx.prisma.bistro.deleteMany({where:{}})
       /**
