@@ -23,7 +23,7 @@ Table BistroUser {
   bistro Bistro [not null]
   user User [not null]
   authority Authority [not null]
-  tipContribution TipContribution [not null]
+  tipContributions TipContribution [not null]
   positions Position [not null]
 
   indexes {
@@ -43,6 +43,7 @@ Table Tip {
   id String [pk]
   tipFormId String [not null]
   date DateTime [not null]
+  total Int [not null, default: 0]
   tipForm TipForm [not null]
 
   indexes {
@@ -55,7 +56,7 @@ Table Position {
   bistroUserId String
   bistroId String [not null]
   name String [not null]
-  tipPercent Json [not null]
+  tipProportion Int [not null, default: 0]
   bistro Bistro [not null]
   BistroUser BistroUser
   TipContribution TipContribution [not null]
@@ -68,6 +69,8 @@ Table TipContribution {
   date DateTime [not null]
   bistroUser BistroUser [not null]
   percent Int [not null, default: 100]
+  tipProportion Int [not null, default: 0]
+  hours Int [not null, default: 0]
   position Position [not null]
 }
 

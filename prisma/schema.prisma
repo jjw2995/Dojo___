@@ -36,8 +36,8 @@ model BistroUser {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   authority Authority
 
-  tipContribution TipContribution[]
-  positions       Position[]
+  tipContributions TipContribution[]
+  positions        Position[]
 
   @@unique([bistroId, userId])
 }
@@ -53,10 +53,6 @@ model TipForm {
   // equation: {}
   // variables: {q12d: "hallTip", 1qwe2: "togoTip"}
   // }
-  // version control split by date
-  // ex. {
-  // 2023-01-01 : {1rfa3: {name: server, ratio: 60}, 1qras3: {name: cook, ratio: 40}},
-  // } etc.
   Tip     Tip[]
 }
 
@@ -66,6 +62,8 @@ model Tip {
   tipFormId String
 
   date    DateTime @db.Time
+  // maybe: add latex formated equation
+  total   Int      @default(0)
   tipForm TipForm  @relation(fields: [tipFormId], references: [id])
 
   @@unique([date, tipFormId])
@@ -76,8 +74,7 @@ model Position {
   bistroUserId    String?
   bistroId        String
   name            String
-  tipPercent      Json 
-  // {2023-01-02: 60}
+  tipProportion   Int               @default(0) @db.UnsignedTinyInt
   bistro          Bistro            @relation(fields: [bistroId], references: [id])
   BistroUser      BistroUser?       @relation(fields: [bistroUserId], references: [id])
   TipContribution TipContribution[]
@@ -85,13 +82,15 @@ model Position {
 
 // tip distrubution within position
 model TipContribution {
-  id           String     @id @default(cuid())
-  bistroUserId String
-  positionId   String
-  date         DateTime   @db.Date
-  bistroUser   BistroUser @relation(fields: [bistroUserId], references: [id])
-  percent      Int        @default(100) @db.UnsignedTinyInt
-  position     Position   @relation(fields: [positionId], references: [id])
+  id            String     @id @default(cuid())
+  bistroUserId  String
+  positionId    String
+  date          DateTime   @db.Date
+  bistroUser    BistroUser @relation(fields: [bistroUserId], references: [id])
+  percent       Int        @default(100) @db.UnsignedTinyInt
+  tipProportion Int        @default(0) @db.UnsignedTinyInt
+  hours         Int        @default(0) @db.UnsignedTinyInt
+  position      Position   @relation(fields: [positionId], references: [id])
 }
 
 model User {
