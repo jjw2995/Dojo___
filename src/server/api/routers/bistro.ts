@@ -1,8 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import {
   createTRPCRouter,
-  publicProcedure,
+  protectedBistroMemberProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
 
@@ -23,6 +24,7 @@ export const bistroRouter = createTRPCRouter({
       });
     }),
 
+  // TODO: change to pBUP
   delete: protectedProcedure
     .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input: { bistroId } }) => {
@@ -44,7 +46,10 @@ export const bistroRouter = createTRPCRouter({
             } else {
               return ctx.prisma.bistro.delete({ where: { id: bistroId } });
             }
+          } else {
+            throw new TRPCError({ code: "BAD_REQUEST" });
           }
         });
     }),
+  // deleteA: protectedBistroMemberProcedure({ isModerator: true }).,
 });

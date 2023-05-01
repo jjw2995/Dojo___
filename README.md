@@ -1,3 +1,33 @@
+# Dojo
+
+#### _made by a restaurant worker, for restaurant workers_
+
+management application for restaurants
+
+## Features
+
+#### general auth & navigation
+
+- [x] social login
+- [x] basic routes/pages
+- [ ] redirect
+- [ ] invite
+
+#### pages
+
+- [ ] Home
+  - [ ] positions
+    - [x] create & delete
+    - [x] view
+    - [ ] assign user
+- [ ] Pay
+  - [ ] Tip
+- [ ] Menu
+
+## Possible future features
+
+- Group owning multiple Bistros
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.

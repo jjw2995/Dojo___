@@ -1,12 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// model {
-//     id        String   @id @default(cuid())
-//     createdAt DateTime @default(now())
-//     updatedAt DateTime @updatedAt
-// }
-
 model Bistro {
   id         String       @id @default(cuid())
   placeId    String
@@ -15,8 +9,8 @@ model Bistro {
   name       String
   address    String?
   tipForms   TipForm[]
-  BistroUser BistroUser[]
-  Position   Position[]
+  bistroUser BistroUser[]
+  positions  Position[]
 
   @@unique([placeId])
 }
@@ -26,34 +20,18 @@ enum Authority {
   USER
 }
 
-model BistroUser {
-  id        String    @id @default(cuid())
-  bistroId  String
-  userId    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  bistro    Bistro    @relation(fields: [bistroId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  authority Authority
-
-  tipContributions TipContribution[]
-  positions        Position[]
-
-  @@unique([bistroId, userId])
-}
-
 // tip template for daily-tip-total
 model TipForm {
   id       String @id @default(cuid())
   bistroId String
 
   bistro  Bistro @relation(fields: [bistroId], references: [id])
-  formula Json
+  formula Json   @default(dbgenerated())
   // {
   // equation: {}
   // variables: {q12d: "hallTip", 1qwe2: "togoTip"}
   // }
-  Tip     Tip[]
+  tips    Tip[]
 }
 
 // daily-tip-total
@@ -69,28 +47,52 @@ model Tip {
   @@unique([date, tipFormId])
 }
 
-model Position {
-  id              String            @id @default(cuid())
-  bistroUserId    String?
-  bistroId        String
-  name            String
-  tipProportion   Int               @default(0) @db.UnsignedTinyInt
-  bistro          Bistro            @relation(fields: [bistroId], references: [id])
-  BistroUser      BistroUser?       @relation(fields: [bistroUserId], references: [id])
+model BistroUser {
+  id        String    @id @default(cuid())
+  bistroId  String
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bistro    Bistro    @relation(fields: [bistroId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  authority Authority
+
+  bistroUserPositions BistroUserPosition[]
+
+  @@unique([bistroId, userId])
+}
+
+model BistroUserPosition {
+  id         String     @id @default(cuid())
+  bistroUser BistroUser @relation(fields: [bistroUserId], references: [id])
+  position   Position   @relation(fields: [positionId], references: [id])
+  tipPercent Int        @default(100) @db.UnsignedTinyInt
+
+  bistroUserId    String
+  positionId      String
   TipContribution TipContribution[]
+
+  @@unique([bistroUserId, positionId])
+}
+
+model Position {
+  id                    String               @id @default(cuid())
+  bistroId              String
+  name                  String
+  positionTipProportion Int                  @default(0) @db.UnsignedTinyInt
+  bistro                Bistro               @relation(fields: [bistroId], references: [id])
+  bistroUserPositions   BistroUserPosition[]
 }
 
 // tip distrubution within position
 model TipContribution {
-  id            String     @id @default(cuid())
-  bistroUserId  String
-  positionId    String
-  date          DateTime   @db.Date
-  bistroUser    BistroUser @relation(fields: [bistroUserId], references: [id])
-  percent       Int        @default(100) @db.UnsignedTinyInt
-  tipProportion Int        @default(0) @db.UnsignedTinyInt
-  hours         Int        @default(0) @db.UnsignedTinyInt
-  position      Position   @relation(fields: [positionId], references: [id])
+  id                    String             @id @default(cuid())
+  date                  DateTime           @db.Date
+  tipPercent            Int                @db.UnsignedTinyInt
+  positionTipProportion Int                @db.UnsignedTinyInt
+  hours                 Int                @db.UnsignedTinyInt
+  bistroUserPosition    BistroUserPosition @relation(fields: [bistroUserPositionId], references: [id])
+  bistroUserPositionId  String
 }
 
 model User {
@@ -101,7 +103,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  BistroUser    BistroUser[]
+  bistroUser    BistroUser[]
 }
 
 // ====================================================
@@ -155,12 +157,4 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
 }

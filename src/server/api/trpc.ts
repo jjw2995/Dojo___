@@ -52,6 +52,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  // req.
 
   return createInnerTRPCContext({
     session,
@@ -67,7 +68,10 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
+import { Authority } from "@prisma/client";
+import { TRPCClientErrorBase, TRPCClientErrorLike } from "@trpc/client";
+import { TRPCErrorShape } from "@trpc/server/rpc";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -128,3 +132,56 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+// ============================================================
+// =======================add_on===============================
+// ============================================================
+
+/**
+ * ADD_ON
+ *
+ * extending domain specific requirements, using DB information
+ */
+
+export const protectedBistroMemberProcedure = (
+  opts: {
+    isModerator: boolean;
+    errMessage?: String;
+    // err: TRPCClientErrorLike | undefined;
+  } = { isModerator: false }
+) => {
+  const { isModerator, errMessage } = opts;
+  return protectedProcedure
+    .input(z.object({ bistroId: z.string().cuid() }))
+    .use(async ({ ctx, input: { bistroId }, next }) => {
+      // ctx.prisma.bistroUser
+      // Authority
+      const bistroUser = await ctx.prisma.bistroUser.findFirst({
+        where: isModerator
+          ? { authority: "MODERATOR", bistroId, userId: ctx.session.user.id }
+          : { bistroId, userId: ctx.session.user.id },
+      });
+
+      if (!bistroUser) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message:
+            `user [${ctx.session.user.id}] is not` +
+            (isModerator ? "moderator" : "member") +
+            " of the Bistro. " +
+            errMessage,
+        });
+      }
+      return next({
+        ctx: {
+          // ...ctx,
+          // infers the `session` as non-nullable
+          session: {
+            ...ctx.session,
+            bistroId,
+            bistroUserId: bistroUser.id,
+          },
+        },
+      });
+    });
+};

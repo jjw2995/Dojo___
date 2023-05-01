@@ -10,25 +10,8 @@ Table Bistro {
   name String [not null]
   address String
   tipForms TipForm [not null]
-  BistroUser BistroUser [not null]
-  Position Position [not null]
-}
-
-Table BistroUser {
-  id String [pk]
-  bistroId String [not null]
-  userId String [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  bistro Bistro [not null]
-  user User [not null]
-  authority Authority [not null]
-  tipContributions TipContribution [not null]
+  bistroUser BistroUser [not null]
   positions Position [not null]
-
-  indexes {
-    (bistroId, userId) [unique]
-  }
 }
 
 Table TipForm {
@@ -36,7 +19,7 @@ Table TipForm {
   bistroId String [not null]
   bistro Bistro [not null]
   formula Json [not null]
-  Tip Tip [not null]
+  tips Tip [not null]
 }
 
 Table Tip {
@@ -51,27 +34,53 @@ Table Tip {
   }
 }
 
+Table BistroUser {
+  id String [pk]
+  bistroId String [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  bistro Bistro [not null]
+  user User [not null]
+  authority Authority [not null]
+  bistroUserPositions BistroUserPosition [not null]
+
+  indexes {
+    (bistroId, userId) [unique]
+  }
+}
+
+Table BistroUserPosition {
+  id String [pk]
+  bistroUser BistroUser [not null]
+  position Position [not null]
+  tipPercent Int [not null, default: 100]
+  bistroUserId String [not null]
+  positionId String [not null]
+  TipContribution TipContribution [not null]
+
+  indexes {
+    (bistroUserId, positionId) [unique]
+  }
+}
+
 Table Position {
   id String [pk]
-  bistroUserId String
   bistroId String [not null]
   name String [not null]
-  tipProportion Int [not null, default: 0]
+  positionTipProportion Int [not null, default: 0]
   bistro Bistro [not null]
-  BistroUser BistroUser
-  TipContribution TipContribution [not null]
+  bistroUserPositions BistroUserPosition [not null]
 }
 
 Table TipContribution {
   id String [pk]
-  bistroUserId String [not null]
-  positionId String [not null]
   date DateTime [not null]
-  bistroUser BistroUser [not null]
-  percent Int [not null, default: 100]
-  tipProportion Int [not null, default: 0]
-  hours Int [not null, default: 0]
-  position Position [not null]
+  tipPercent Int [not null]
+  positionTipProportion Int [not null]
+  hours Int [not null]
+  bistroUserPosition BistroUserPosition [not null]
+  bistroUserPositionId String [not null]
 }
 
 Table User {
@@ -82,7 +91,7 @@ Table User {
   image String
   accounts Account [not null]
   sessions Session [not null]
-  BistroUser BistroUser [not null]
+  bistroUser BistroUser [not null]
 }
 
 Table Account {
@@ -113,36 +122,26 @@ Table Session {
   user User [not null]
 }
 
-Table VerificationToken {
-  identifier String [not null]
-  token String [unique, not null]
-  expires DateTime [not null]
-
-  indexes {
-    (identifier, token) [unique]
-  }
-}
-
 Enum Authority {
   MODERATOR
   USER
 }
 
-Ref: BistroUser.bistroId > Bistro.id [delete: Cascade]
-
-Ref: BistroUser.userId > User.id [delete: Cascade]
-
 Ref: TipForm.bistroId > Bistro.id
 
 Ref: Tip.tipFormId > TipForm.id
 
+Ref: BistroUser.bistroId > Bistro.id [delete: Cascade]
+
+Ref: BistroUser.userId > User.id [delete: Cascade]
+
+Ref: BistroUserPosition.bistroUserId > BistroUser.id
+
+Ref: BistroUserPosition.positionId > Position.id
+
 Ref: Position.bistroId > Bistro.id
 
-Ref: Position.bistroUserId > BistroUser.id
-
-Ref: TipContribution.bistroUserId > BistroUser.id
-
-Ref: TipContribution.positionId > Position.id
+Ref: TipContribution.bistroUserPositionId > BistroUserPosition.id
 
 Ref: Account.userId > User.id [delete: Cascade]
 

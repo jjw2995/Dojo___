@@ -7,9 +7,7 @@ import { api } from "~/utils/api";
 import { Input } from "components/ui/input";
 import { useState } from "react";
 
-const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
+const Main: NextPage = () => {
   const { data: sessionData, status, update } = useSession();
   //
   return (
@@ -51,13 +49,19 @@ const Home: NextPage = () => {
 const Bistro: React.FC & { withAuth: boolean } = () => {
   const { data } = api.bistro.getAll.useQuery();
   const ctx = api.useContext();
+  // useQuer
+  // api.use
+  // ctx.
 
-  const { mutate: createBistro, isError: createError } =
-    api.bistro.create.useMutation({
-      onSuccess: () => {
-        ctx.bistro.getAll.invalidate();
-      },
-    });
+  const {
+    mutate: createBistro,
+    isError: createError,
+    error,
+  } = api.bistro.create.useMutation({
+    onSuccess: () => {
+      ctx.bistro.getAll.invalidate();
+    },
+  });
 
   const { mutate: deleteBistro, isError: deleteError } =
     api.bistro.delete.useMutation({
@@ -84,7 +88,7 @@ const Bistro: React.FC & { withAuth: boolean } = () => {
       {data?.map(({ name, id }) => {
         return (
           <div key={id}>
-            <Link href={`/bistro/${id}/pay`}>
+            <Link href={`/bistro/${id}/home`}>
               {name} - {id}
             </Link>
             <button
@@ -106,28 +110,28 @@ Bistro.withAuth = true;
 
 // export default Bistro;
 
-export default Home;
+export default Main;
 
-const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
+// const AuthShowcase: React.FC = () => {
+//   const { data: sessionData } = useSession();
 
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined }
-  );
+//   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
+//     undefined, // no input
+//     { enabled: sessionData?.user !== undefined }
+//   );
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl ">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        className="rounded-full px-10 py-3 font-semibold no-underline transition "
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
-};
+//   return (
+//     <div className="flex flex-col items-center justify-center gap-4">
+//       <p className="text-center text-2xl ">
+//         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
+//         {secretMessage && <span> - {secretMessage}</span>}
+//       </p>
+//       <button
+//         className="rounded-full px-10 py-3 font-semibold no-underline transition "
+//         onClick={sessionData ? () => void signOut() : () => void signIn()}
+//       >
+//         {sessionData ? "Sign out" : "Sign in"}
+//       </button>
+//     </div>
+//   );
+// };
