@@ -3,12 +3,16 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
-import BistroLayout, { useBistro } from "~/components/layout/bistroLayout";
+import BistroLayout, { useBistro } from "components/layout/bistroLayout";
 import { api } from "~/utils/api";
 
 const Home: NextPage = (p) => {
-  // console.log(p);
-
+  /**
+   * add position widget(Mod)
+   * positions view
+   * - group people by position
+   *
+   */
   return (
     <div>
       <PositionComponent />

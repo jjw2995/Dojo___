@@ -1,6 +1,7 @@
+import { Input } from "components/ui/input";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Input } from "~/components/ui/input";
+
 import withAuth from "~/hoc/withAuth";
 import { RouterOutputs, api } from "~/utils/api";
 
