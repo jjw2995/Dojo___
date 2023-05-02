@@ -3,7 +3,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
 import { bistroRouter } from "./routers/bistro";
 import { payRouter } from "./routers/pay";
 import { positionRouter } from "./routers/position";
-import { memberRouter } from "./routers/member";
+import { bistroUserRouter } from "./routers/bistroUser";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +13,7 @@ import { memberRouter } from "./routers/member";
 export const appRouter = createTRPCRouter({
   // example: exampleRouter,
   bistro: bistroRouter,
+  bistroUser: bistroUserRouter,
   pay: payRouter,
   positions: positionRouter,
 });

@@ -7,7 +7,7 @@ import { useBistroIdQueryParam } from "~/components/hooks/useBistroIdQueryParam"
 import BistroLayout from "~/components/layout/bistroLayout";
 import { api } from "~/utils/api";
 
-const Home: NextPage & { withAuth: boolean } = (p) => {
+const Home: NextPage = (p) => {
   // console.log(p);
 
   return (
@@ -18,8 +18,6 @@ const Home: NextPage & { withAuth: boolean } = (p) => {
 };
 /**
  */
-
-Home.withAuth = true;
 
 const PositionComponent = () => {
   return (
@@ -32,9 +30,10 @@ const PositionComponent = () => {
 };
 
 const CreatePostitionWizard = () => {
-  const { data } = useSession();
   const [name, setName] = useState("");
-  const bistroId = useBistroIdQueryParam();
+
+  // string | string[] | undef
+  const bistroId = useBistroIdQueryParam() as string;
 
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
@@ -103,13 +102,4 @@ const ShowPositions = () => {
   );
 };
 
-const Tip: React.FC = () => {
-  return <div></div>;
-};
-
 export default BistroLayout(Home);
-// export default Home;
-
-// BistroLayout({
-//   children: <Home />,
-// });

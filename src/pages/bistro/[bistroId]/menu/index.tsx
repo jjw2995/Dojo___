@@ -1,9 +1,7 @@
 import { NextPage } from "next";
 
-const Menu: NextPage & { withAuth: boolean } = () => {
+const Menu: NextPage = () => {
   return <div>menu</div>;
 };
-
-Menu.withAuth = true;
 
 export default Menu;

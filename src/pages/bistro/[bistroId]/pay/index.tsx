@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import React from "react";
 
-const Pay: NextPage & { withAuth: boolean } = () => {
+const Pay: NextPage = () => {
   return <div>Pay</div>;
 };
 /**
@@ -10,8 +10,6 @@ const Pay: NextPage & { withAuth: boolean } = () => {
  * position ratio
  *
  */
-
-Pay.withAuth = true;
 
 const Tip: React.FC = () => {
   return <div></div>;

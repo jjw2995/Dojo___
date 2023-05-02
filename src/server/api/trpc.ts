@@ -147,7 +147,6 @@ export const protectedBistroMemberProcedure = (
   opts: {
     isModerator: boolean;
     errMessage?: String;
-    // err: TRPCClientErrorLike | undefined;
   } = { isModerator: false }
 ) => {
   const { isModerator, errMessage } = opts;
