@@ -1,8 +1,18 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
+import {
+  createTRPCRouter,
+  protectedBistroMemberProcedure,
+  protectedProcedure,
+} from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const positionRouter = createTRPCRouter({
+  // getMemberInfo: protectedProcedure.query(({ ctx }) => {
+  //   // ctx.prisma.bistroUser.findUnique({
+  //   //   where: { bistroId_userId: { userId: ctx.session.user.id } },
+  //   // });
+  //   return 0;
+  // }),
   getAll: protectedBistroMemberProcedure().query(
     ({ ctx: { prisma, session } }) => {
       return prisma.position.findMany({

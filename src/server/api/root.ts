@@ -3,6 +3,7 @@ import { createTRPCRouter } from "~/server/api/trpc";
 import { bistroRouter } from "./routers/bistro";
 import { payRouter } from "./routers/pay";
 import { positionRouter } from "./routers/position";
+import { memberRouter } from "./routers/member";
 
 /**
  * This is the primary router for your server.

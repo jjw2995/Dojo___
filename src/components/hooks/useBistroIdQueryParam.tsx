@@ -1,13 +1,15 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
 import { z } from "zod";
 
 export const useBistroIdQueryParam = () => {
-  const { bistroId } = useRouter().query;
+  const a = useRouter().query;
 
+  // console.log(a);
   // console.log(z.string().parse(24));
   // TODO: add redirect to bistro page
-  return z.string().parse(bistroId);
+  try {
+    return z.string().parse(a.bistroId);
+  } catch (error) {}
 };
 
 // export const bistroId = useBistroIdQueryParam();

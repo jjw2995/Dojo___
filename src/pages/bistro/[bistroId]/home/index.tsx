@@ -3,10 +3,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
-import { useBistroIdQueryParam } from "~/components/useBistroIdQueryParam";
+import { useBistroIdQueryParam } from "~/components/hooks/useBistroIdQueryParam";
+import BistroLayout from "~/components/layout/bistroLayout";
 import { api } from "~/utils/api";
 
-const Home: NextPage & { withAuth: boolean } = () => {
+const Home: NextPage & { withAuth: boolean } = (p) => {
+  // console.log(p);
+
   return (
     <div>
       <PositionComponent />
@@ -32,7 +35,6 @@ const CreatePostitionWizard = () => {
   const { data } = useSession();
   const [name, setName] = useState("");
   const bistroId = useBistroIdQueryParam();
-  console.log(data);
 
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
@@ -68,6 +70,7 @@ const CreatePostitionWizard = () => {
 const ShowPositions = () => {
   const bistroId = useBistroIdQueryParam();
   const ctx = api.useContext();
+  const router = useRouter();
   const { data } = api.positions.getAll.useQuery({
     bistroId,
   });
@@ -104,4 +107,9 @@ const Tip: React.FC = () => {
   return <div></div>;
 };
 
-export default Home;
+export default BistroLayout(Home);
+// export default Home;
+
+// BistroLayout({
+//   children: <Home />,
+// });

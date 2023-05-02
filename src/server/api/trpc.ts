@@ -166,10 +166,10 @@ export const protectedBistroMemberProcedure = (
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message:
-            `user [${ctx.session.user.id}] is not` +
+            `user [${ctx.session.user.id}] is not ` +
             (isModerator ? "moderator" : "member") +
             " of the Bistro. " +
-            errMessage,
+            (errMessage ? errMessage : ""),
         });
       }
       return next({
@@ -180,6 +180,7 @@ export const protectedBistroMemberProcedure = (
             ...ctx.session,
             bistroId,
             bistroUserId: bistroUser.id,
+            authority: bistroUser.authority,
           },
         },
       });

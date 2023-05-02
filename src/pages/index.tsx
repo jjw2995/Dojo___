@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
-import { Input } from "components/ui/input";
+import { Input } from "~/components/ui/input";
 import { useState } from "react";
 
 const Main: NextPage = () => {
@@ -49,9 +49,6 @@ const Main: NextPage = () => {
 const Bistro: React.FC & { withAuth: boolean } = () => {
   const { data } = api.bistro.getAll.useQuery();
   const ctx = api.useContext();
-  // useQuer
-  // api.use
-  // ctx.
 
   const {
     mutate: createBistro,

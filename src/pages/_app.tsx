@@ -5,23 +5,19 @@ import { SessionProvider } from "next-auth/react";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
-import { ProtectedLayout } from "~/utils/protectedLayouts";
+import { ProtectedLayout } from "~/components/layout/protectedLayouts";
 
-// const MyApp: AppType<{ session: Session | null }> = ({
-//   Component,
-//   pageProps: { session, ...pageProps },
-// }) => {
-//   return (
-//     <SessionProvider session={session}>
-//       <Component {...pageProps} />
-//     </SessionProvider>
-//   );
-// };
+const MyApp: AppType<{ session: Session | null }> = ({
+  Component,
+  pageProps: { session, ...pageProps },
+}) => {
+  return (
+    <SessionProvider session={session}>
+      <Component {...pageProps} />
+    </SessionProvider>
+  );
+};
 
-// export default api.withTRPC(MyApp);
-
-// ============================================================
-// ============================================================
 // ============================================================
 
 // add requireAuth to AppProps
@@ -31,20 +27,20 @@ type AppPropsWithAuth = AppProps & {
   };
 };
 
-function MyApp({ Component, pageProps }: AppPropsWithAuth) {
-  return (
-    <SessionProvider session={pageProps.session}>
-      {Component.withAuth ? (
-        <ProtectedLayout>
-          <Component {...pageProps} />
-        </ProtectedLayout>
-      ) : (
-        <Component />
-        // <div>unauthenticated</div>
-        // <Component {...pageProps} />
-      )}
-    </SessionProvider>
-  );
-}
+// function MyApp({ Component, pageProps }: AppPropsWithAuth) {
+//   return (
+//     <SessionProvider session={pageProps.session}>
+//       {Component.withAuth ? (
+//         <ProtectedLayout>
+//           <Component {...pageProps} />
+//         </ProtectedLayout>
+//       ) : (
+//         <Component />
+//         // <div>unauthenticated</div>
+//         // <Component {...pageProps} />
+//       )}
+//     </SessionProvider>
+//   );
+// }
 
 export default api.withTRPC(MyApp);

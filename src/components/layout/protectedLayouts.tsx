@@ -32,11 +32,13 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
     // with a return url to the current page
 
     if (unAuthorized) {
-      console.log("not authorized");
+      console.log("not authorized: ", router);
       router.push({
         pathname: "/",
         query: { returnUrl: router.asPath },
       });
+    } else {
+      console.log("authorized: ", router);
     }
   }, [loading, unAuthorized, sessionStatus, router]);
 
