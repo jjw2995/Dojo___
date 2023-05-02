@@ -9,6 +9,7 @@ export const bistroUserRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.bistroUser.findMany({
       where: { userId: ctx.session.user.id },
+      include: { bistro: true },
     });
   }),
   get: protectedProcedure

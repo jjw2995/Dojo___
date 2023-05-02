@@ -1,10 +1,9 @@
 import { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useState } from "react";
-import { useBistroIdQueryParam } from "~/components/hooks/useBistroIdQueryParam";
-import BistroLayout from "~/components/layout/bistroLayout";
+import BistroLayout, { useBistro } from "~/components/layout/bistroLayout";
 import { api } from "~/utils/api";
 
 const Home: NextPage = (p) => {
@@ -20,6 +19,8 @@ const Home: NextPage = (p) => {
  */
 
 const PositionComponent = () => {
+  console.log(useBistro());
+
   return (
     <div className="rounded p-5 outline">
       Positions
@@ -31,9 +32,7 @@ const PositionComponent = () => {
 
 const CreatePostitionWizard = () => {
   const [name, setName] = useState("");
-
-  // string | string[] | undef
-  const bistroId = useBistroIdQueryParam() as string;
+  const { bistroId, authority } = useBistro();
 
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
@@ -67,7 +66,7 @@ const CreatePostitionWizard = () => {
 };
 
 const ShowPositions = () => {
-  const bistroId = useBistroIdQueryParam();
+  const { bistroId } = useBistro();
   const ctx = api.useContext();
   const router = useRouter();
   const { data } = api.positions.getAll.useQuery({
