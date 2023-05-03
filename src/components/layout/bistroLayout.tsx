@@ -7,7 +7,7 @@ import { links } from "~/utils/links";
 import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
-const bistroContext = createContext<dataType>();
+const bistroContext = createContext<dataType>({} as dataType);
 
 export const useBistro = () => {
   const bistro = useContext(bistroContext);
