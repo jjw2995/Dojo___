@@ -1,10 +1,7 @@
 import { type NextPage } from "next";
-import Head from "next/head";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 
 const Main: NextPage = () => {
-  const { data: sessionData, status, update } = useSession();
   //
   return (
     <>
@@ -12,7 +9,7 @@ const Main: NextPage = () => {
         <button
           onClick={() => {
             // signIn("google");
-            signIn("google", { callbackUrl: "/bistro" });
+            void signIn("google", { callbackUrl: "/bistro" });
           }}
         >
           Sign in with Google

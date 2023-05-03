@@ -10,7 +10,7 @@ export const tipFormRouter = createTRPCRouter({
       return ctx.prisma.tipForm.findMany({ where: { bistroId: bistroId } });
     }),
   // variables str[], equation str
-  create: protectedProcedure
-    .input(z.object({}))
-    .mutation(({ ctx, input }) => {}),
+  // create: protectedProcedure
+  //   .input(z.object({}))
+  //   .mutation(({ ctx, input }) => {}),
 });

@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedBistroMemberProcedure,
-  protectedProcedure,
-} from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const bistroUserRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {
@@ -15,7 +11,7 @@ export const bistroUserRouter = createTRPCRouter({
   get: protectedProcedure
     .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input }) => {
-      ctx.prisma.bistroUser.findFirst({
+      return ctx.prisma.bistroUser.findFirst({
         where: { bistroId: input.bistroId, userId: ctx.session.user.id },
       });
     }),

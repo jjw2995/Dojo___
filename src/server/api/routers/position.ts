@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedBistroMemberProcedure,
-  protectedProcedure,
-} from "../trpc";
+import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const positionRouter = createTRPCRouter({
@@ -42,7 +38,7 @@ export const positionRouter = createTRPCRouter({
         );
 
       if (isPositionNotUsed || isOnlySelfAssinged) {
-        ctx.prisma.bistroUserPosition.deleteMany({
+        void ctx.prisma.bistroUserPosition.deleteMany({
           where: { positionId: input.positionId },
         });
         return ctx.prisma.position.delete({ where: { id: input.positionId } });

@@ -1,9 +1,14 @@
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import React, {
+  type ComponentType,
+  type PropsWithChildren,
+  useEffect,
+} from "react";
 
-const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
-  const Wrap = (props: P) => {
+function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
+  // const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
+  const Wrapper = (props: P) => {
     const router = useRouter();
     const { status: sessionStatus } = useSession();
     const authorized = sessionStatus === "authenticated";
@@ -18,7 +23,7 @@ const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
       // with a return url to the current page
       if (unAuthorized) {
         // console.log("not authorized: ", router);
-        router.push({
+        void router.push({
           pathname: "/login",
           // query: { returnUrl: router.asPath },
         });
@@ -39,7 +44,7 @@ const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
           <button
             className="font-bold"
             onClick={() => {
-              signOut();
+              void signOut();
             }}
           >
             SignOut
@@ -51,8 +56,7 @@ const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
       <></>
     );
   };
-
-  return Wrap;
-};
+  return Wrapper;
+}
 
 export default withAuth;

@@ -1,11 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedBistroMemberProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const bistroRouter = createTRPCRouter({
   getAll: protectedProcedure.query(({ ctx }) => {

@@ -1,20 +1,31 @@
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  type PropsWithChildren,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import WithAuth from "~/hoc/withAuth";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import { links } from "~/utils/links";
 import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
-const bistroContext = createContext<dataType>({} as dataType);
+// const temp: dataType = {};
+const bistroContext = createContext<dataType | undefined>(undefined);
 
 export const useBistro = () => {
   const bistro = useContext(bistroContext);
+  if (bistro === undefined) {
+    throw new Error("useBistroContext must be within BistroProvier");
+  }
   return bistro;
 };
 
-const BistroLayout = <P extends Object>(Component: React.ComponentType<P>) => {
+const BistroLayout = <P extends PropsWithChildren>(
+  Component: React.ComponentType<P>
+) => {
   /**
    * TODO:
    * check user is a member of Bistro
@@ -22,8 +33,6 @@ const BistroLayout = <P extends Object>(Component: React.ComponentType<P>) => {
    * True: pass down bistroUser as prop
    * False: redirect to Bistro select page
    */
-  // const z = useContext()
-  // const bistroIdCont
   const Wrap = (props: P) => {
     const router = useRouter();
     const { isReady, query } = router;
@@ -36,7 +45,7 @@ const BistroLayout = <P extends Object>(Component: React.ComponentType<P>) => {
       if (data) {
         setBistro(data.find((e) => e.bistroId === query.bistroId));
       }
-    }, [data]);
+    }, [data, query]);
 
     const getBistroUser = (data: dataType[]) => {
       const temp = data.find((e) => e.bistroId === query.bistroId);
@@ -45,7 +54,7 @@ const BistroLayout = <P extends Object>(Component: React.ComponentType<P>) => {
 
     if (isReady && isFetched && data) {
       if (!getBistroUser(data)) {
-        router.push({ pathname: links.bistro });
+        void router.push({ pathname: links.bistro });
       }
     }
 
@@ -65,4 +74,5 @@ const BistroLayout = <P extends Object>(Component: React.ComponentType<P>) => {
 };
 
 // http://localhost:3000/bistro/clh35xx6l0001wm8sm1rjg3jz/home
-export default (c: React.ComponentType) => WithAuth(BistroLayout(c));
+const Wrap = (c: React.ComponentType) => WithAuth(BistroLayout(c));
+export default Wrap;

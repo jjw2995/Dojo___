@@ -1,6 +1,5 @@
-import { useBistro } from "~/components/layout/bistroLayout";
 import Link from "next/link";
-import { RouterOutputs } from "~/utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import { links } from "~/utils/links";
 
 type bistroType = RouterOutputs["bistroUser"]["getAll"][number];

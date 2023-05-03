@@ -45,7 +45,7 @@ const CreatePostitionWizard = () => {
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
     onSuccess: ({}) => {
-      ctx.positions.getAll.invalidate({ bistroId });
+      void ctx.positions.getAll.invalidate({ bistroId });
     },
   });
 
@@ -82,7 +82,7 @@ const PositionsView = () => {
 
   const { mutate: deletePosition } = api.positions.delete.useMutation({
     onSuccess: ({}) => {
-      ctx.positions.getAll.invalidate({ bistroId });
+      void ctx.positions.getAll.invalidate({ bistroId });
     },
   });
 

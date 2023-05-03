@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import withAuth from "~/hoc/withAuth";
 import { RouterOutputs, api } from "~/utils/api";
@@ -8,13 +8,9 @@ const CreateWizard = () => {
   const [input, setInput] = useState("");
   const ctx = api.useContext();
 
-  const {
-    mutate: createBistro,
-    isError: createError,
-    error,
-  } = api.bistro.create.useMutation({
+  const { mutate: createBistro } = api.bistro.create.useMutation({
     onSuccess: () => {
-      ctx.bistro.getAll.invalidate();
+      void ctx.bistro.getAll.invalidate();
     },
   });
 
@@ -47,15 +43,14 @@ const BistroItem = ({ bistro }: { bistro: bistro }) => {
 const Bistro = () => {
   const { data } = api.bistro.getAll.useQuery();
   const ctx = api.useContext();
-  const { mutate, data: bUser } = api.bistroUser.get.useMutation();
+  const { mutate } = api.bistroUser.get.useMutation();
   // console.log(bUser);
 
-  const { mutate: deleteBistro, isError: deleteError } =
-    api.bistro.delete.useMutation({
-      onSuccess: () => {
-        ctx.bistro.getAll.invalidate();
-      },
-    });
+  const { mutate: deleteBistro } = api.bistro.delete.useMutation({
+    onSuccess: () => {
+      void ctx.bistro.getAll.invalidate();
+    },
+  });
 
   return (
     <div>

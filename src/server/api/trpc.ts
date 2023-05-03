@@ -69,9 +69,6 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod";
-import { Authority } from "@prisma/client";
-import { TRPCClientErrorBase, TRPCClientErrorLike } from "@trpc/client";
-import { TRPCErrorShape } from "@trpc/server/rpc";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -146,7 +143,7 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 export const protectedBistroMemberProcedure = (
   opts: {
     isModerator: boolean;
-    errMessage?: String;
+    errMessage?: string;
   } = { isModerator: false }
 ) => {
   const { isModerator, errMessage } = opts;
@@ -164,11 +161,9 @@ export const protectedBistroMemberProcedure = (
       if (!bistroUser) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message:
-            `user [${ctx.session.user.id}] is not ` +
-            (isModerator ? "moderator" : "member") +
-            " of the Bistro. " +
-            (errMessage ? errMessage : ""),
+          message: `user [${ctx.session.user.id}] is not ${
+            isModerator ? "moderator" : "member"
+          } of the Bistro. ${errMessage ? errMessage : ""}`,
         });
       }
       return next({
