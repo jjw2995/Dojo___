@@ -1,12 +1,11 @@
 import { NextPage } from "next";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
-import BistroLayout, { useBistro } from "~/components/layout/bistroLayout";
-import { api } from "~/utils/api";
+import BistroLayout, {
+  useBistroContext,
+} from "~/components/layout/bistroLayout";
+import { RouterOutputs, api } from "~/utils/api";
 
-import * as Popover from "@radix-ui/react-popover";
 import PopoverDemo from "~/components/popover";
 
 const Home: NextPage = (p) => {
@@ -26,10 +25,10 @@ const Home: NextPage = (p) => {
  */
 
 const PositionComponent = () => {
-  console.log(useBistro());
+  const { authority } = useBistroContext();
 
   return (
-    <div className=" outline">
+    <div className=" p-1 outline">
       Positions
       <CreatePostitionWizard />
       {/* d */}
@@ -40,29 +39,31 @@ const PositionComponent = () => {
 
 const CreatePostitionWizard = () => {
   const [name, setName] = useState("");
-  const { bistroId, authority } = useBistro();
+  const { bistroId, authority } = useBistroContext();
 
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
     onSuccess: ({}) => {
       void ctx.positions.getAll.invalidate({ bistroId });
     },
+    // onError: (e) => {
+    //   alert("too short");
+    // },
   });
 
   return (
-    <div className="m-2 flex rounded p-1 outline">
-      <span>create new position</span>
+    <div className="m-1 flex items-center justify-center rounded p-1 outline">
       <input
-        className="m-2"
+        className=""
         type="text"
-        placeholder="position name"
+        placeholder="create new position"
         onChange={(e) => {
           e.preventDefault();
           setName(e.target.value);
         }}
       />
-      |
       <button
+        className="rounded p-1 outline"
         onClick={() => {
           mutate({ postionName: name, bistroId });
         }}
@@ -74,7 +75,7 @@ const CreatePostitionWizard = () => {
 };
 
 const PositionsView = () => {
-  const { bistroId } = useBistro();
+  const { bistroId } = useBistroContext();
   const ctx = api.useContext();
   const { data } = api.positions.getAll.useQuery({
     bistroId,
@@ -115,6 +116,15 @@ const PositionsView = () => {
           </div>
         );
       })}
+    </>
+  );
+};
+
+type BistroUserElem = RouterOutputs["bistroUser"]["getAll"][number];
+const BistroUsersView = (bistroUsers: BistroUserElem[]) => {
+  return (
+    <>
+      <div></div>
     </>
   );
 };

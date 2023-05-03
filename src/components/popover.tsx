@@ -3,7 +3,7 @@ import * as Popover from "@radix-ui/react-popover";
 // import { MixerHorizontalIcon, Cross2Icon } from '@radix-ui/react-icons';
 
 const PopoverDemo = () => (
-  <Popover.Root>
+  <Popover.Root modal={true}>
     <Popover.Trigger asChild>
       <button
         className="text-violet11 shadow-blackA7 hover:bg-violet3 inline-flex h-[35px] w-[35px] cursor-default items-center justify-center rounded-full bg-white shadow-[0_2px_10px] outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
@@ -22,19 +22,7 @@ const PopoverDemo = () => (
           <p className="text-mauve12 mb-2.5 text-[15px] font-medium leading-[19px]">
             Dimensions
           </p>
-          <fieldset className="flex items-center gap-5">
-            <label
-              className="text-violet11 w-[75px] text-[13px]"
-              htmlFor="width"
-            >
-              Width
-            </label>
-            <input
-              className="text-violet11 shadow-violet7 focus:shadow-violet8 inline-flex h-[25px] w-full flex-1 items-center justify-center rounded px-2.5 text-[13px] leading-none shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px]"
-              id="width"
-              defaultValue="100%"
-            />
-          </fieldset>
+
           <fieldset className="flex items-center gap-5">
             <label
               className="text-violet11 w-[75px] text-[13px]"
@@ -79,8 +67,7 @@ const PopoverDemo = () => (
           className="text-violet11 hover:bg-violet4 focus:shadow-violet7 absolute right-[5px] top-[5px] inline-flex h-[25px] w-[25px] cursor-default items-center justify-center rounded-full outline-none focus:shadow-[0_0_0_2px]"
           aria-label="Close"
         >
-          {/* <Cross2Icon /> */}
-          icon
+          x
         </Popover.Close>
         <Popover.Arrow className="fill-white" />
       </Popover.Content>

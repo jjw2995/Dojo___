@@ -6,14 +6,14 @@ type bistroType = RouterOutputs["bistroUser"]["getAll"][number];
 export const Nav = ({ bistro }: { bistro: bistroType }) => {
   const { bistroId } = bistro;
   return (
-    <div className="flex justify-between outline">
-      <Link className="m-1 outline" href={links.withBistroId(bistroId).home}>
+    <div className="my-2 flex justify-around py-1 outline">
+      <Link className="m-1 " href={links.withBistroId(bistroId).home}>
         Home
       </Link>
-      <Link className="m-1 outline" href={links.withBistroId(bistroId).pay}>
+      <Link className="m-1 " href={links.withBistroId(bistroId).pay}>
         Pay
       </Link>
-      <Link className="m-1 outline" href={links.withBistroId(bistroId).menu}>
+      <Link className="m-1 " href={links.withBistroId(bistroId).menu}>
         Menu
       </Link>
     </div>

@@ -39,7 +39,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
 
     return authorized ? (
       <div>
-        <div className=" flex h-9 items-center justify-between bg-slate-200">
+        <div className=" flex items-center justify-between bg-slate-200">
           <div>Dojo Icon</div>
           <button
             className="font-bold"

@@ -31,7 +31,7 @@ const CreateWizard = () => {
   );
 };
 
-type bistro = RouterOutputs["bistro"]["getAll"][number];
+type bistro = RouterOutputs["bistro"]["getAllPartOf"][number];
 const BistroItem = ({ bistro }: { bistro: bistro }) => {
   return (
     <ul className="m-1 rounded-sm outline">
@@ -41,14 +41,14 @@ const BistroItem = ({ bistro }: { bistro: bistro }) => {
   );
 };
 const Bistro = () => {
-  const { data } = api.bistro.getAll.useQuery();
+  const { data } = api.bistro.getAllPartOf.useQuery();
   const ctx = api.useContext();
   const { mutate } = api.bistroUser.get.useMutation();
   // console.log(bUser);
 
   const { mutate: deleteBistro } = api.bistro.delete.useMutation({
     onSuccess: () => {
-      void ctx.bistro.getAll.invalidate();
+      void ctx.bistro.getAllPartOf.invalidate();
     },
   });
 

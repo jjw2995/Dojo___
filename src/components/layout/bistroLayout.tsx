@@ -12,10 +12,9 @@ import { links } from "~/utils/links";
 import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
-// const temp: dataType = {};
 const bistroContext = createContext<dataType | undefined>(undefined);
 
-export const useBistro = () => {
+export const useBistroContext = () => {
   const bistro = useContext(bistroContext);
   if (bistro === undefined) {
     throw new Error("useBistroContext must be within BistroProvier");
@@ -36,7 +35,7 @@ const BistroLayout = <P extends PropsWithChildren>(
   const Wrap = (props: P) => {
     const router = useRouter();
     const { isReady, query } = router;
-    console.log("in bistroLayout", query, isReady);
+    // console.log("in bistroLayout", query, isReady);
     const { data, isFetched } = api.bistroUser.getAll.useQuery();
 
     const [bistro, setBistro] = useState<dataType>();
@@ -60,9 +59,7 @@ const BistroLayout = <P extends PropsWithChildren>(
 
     return isReady && bistro ? (
       <>
-        {/* <div className="m-1"> */}
         <Nav bistro={bistro} />
-        {/* </div> */}
         <bistroContext.Provider value={bistro}>
           <Component {...{ ...props }} />
         </bistroContext.Provider>

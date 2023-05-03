@@ -4,10 +4,19 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const bistroRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.bistro.findMany();
+  // getAll: protectedProcedure.query(({ ctx }) => {
+  //   return ctx.prisma.bistro.findMany();
+  // }),
+  getAllNotPartOf: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.bistro.findMany({
+      where: { bistroUser: { none: { userId: ctx.session.user.id } } },
+    });
   }),
-
+  getAllPartOf: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.bistro.findMany({
+      where: { bistroUser: { some: { userId: ctx.session.user.id } } },
+    });
+  }),
   create: protectedProcedure
     .input(z.object({ name: z.string().min(3).max(50) }))
     .mutation(({ ctx, input }) => {
