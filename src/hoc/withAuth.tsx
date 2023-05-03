@@ -34,17 +34,16 @@ const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
 
     return authorized ? (
       <div>
-        <div className="m-2 outline">
-          WithAuth
-          <div>
-            <button
-              onClick={() => {
-                signOut();
-              }}
-            >
-              SignOut
-            </button>
-          </div>
+        <div className=" flex h-9 items-center justify-between bg-slate-200">
+          <div>Dojo Icon</div>
+          <button
+            className="font-bold"
+            onClick={() => {
+              signOut();
+            }}
+          >
+            SignOut
+          </button>
         </div>
         <Component {...props} />
       </div>

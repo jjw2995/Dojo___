@@ -3,20 +3,23 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState } from "react";
-import BistroLayout, { useBistro } from "components/layout/bistroLayout";
+import BistroLayout, { useBistro } from "~/components/layout/bistroLayout";
 import { api } from "~/utils/api";
+
+import * as Popover from "@radix-ui/react-popover";
+import PopoverDemo from "~/components/popover";
 
 const Home: NextPage = (p) => {
   /**
    * add position widget(Mod)
    * positions view
    * - group people by position
-   *
+   * - with tip% hourRate
    */
   return (
-    <div>
+    <>
       <PositionComponent />
-    </div>
+    </>
   );
 };
 /**
@@ -26,10 +29,11 @@ const PositionComponent = () => {
   console.log(useBistro());
 
   return (
-    <div className="rounded p-5 outline">
+    <div className=" outline">
       Positions
       <CreatePostitionWizard />
-      <ShowPositions />
+      {/* d */}
+      <PositionsView />
     </div>
   );
 };
@@ -69,10 +73,9 @@ const CreatePostitionWizard = () => {
   );
 };
 
-const ShowPositions = () => {
+const PositionsView = () => {
   const { bistroId } = useBistro();
   const ctx = api.useContext();
-  const router = useRouter();
   const { data } = api.positions.getAll.useQuery({
     bistroId,
   });
@@ -83,21 +86,32 @@ const ShowPositions = () => {
     },
   });
 
+  /**
+   * position +user
+   * - user1, user4
+   *
+   * position2 +user
+   * - user3, user5
+   */
+
   return (
     <>
       {data?.map((r) => {
         return (
-          <div key={r.id} className="flex-row p-1 outline">
+          <div key={r.id} className="outline">
             <div>{r.name}</div>
-            {r.id}
             <button
-              className="m-1 p-1 outline"
+              className="outline"
               onClick={() => {
                 deletePosition({ bistroId, positionId: r.id });
               }}
             >
               x
             </button>
+            <div>
+              <button className="outline">add user +</button>
+            </div>
+            <PopoverDemo />
           </div>
         );
       })}

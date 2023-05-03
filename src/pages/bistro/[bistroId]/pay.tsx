@@ -1,3 +1,4 @@
+import bistroLayout from "~/components/layout/bistroLayout";
 import { NextPage } from "next";
 import React from "react";
 
@@ -12,7 +13,7 @@ const Pay: NextPage = () => {
  */
 
 const Tip: React.FC = () => {
-  return <div></div>;
+  return <></>;
 };
 
-export default Pay;
+export default bistroLayout(Pay);

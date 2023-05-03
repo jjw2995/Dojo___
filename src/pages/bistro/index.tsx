@@ -1,4 +1,3 @@
-import { Input } from "components/ui/input";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -19,7 +18,7 @@ const CreateWizard = ({ ctx }) => {
 
   return (
     <>
-      <Input
+      <input
         className="outline"
         onChange={(e) => {
           e.preventDefault();

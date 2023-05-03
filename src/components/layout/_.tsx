@@ -50,7 +50,7 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
   // if the user is authorized, render the page
   // otherwise, render nothing while the router redirects him to the login page
   return authorized ? (
-    <div>
+    <>
       layout
       <button
         className="outline"
@@ -61,7 +61,7 @@ export const ProtectedLayout = ({ children }: Props): JSX.Element => {
         sign out
       </button>
       {children}
-    </div>
+    </>
   ) : (
     <></>
   );

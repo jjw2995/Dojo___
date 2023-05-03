@@ -8,12 +8,6 @@ const Main: NextPage = () => {
   //
   return (
     <>
-      <Head>
-        <title>Dojo</title>
-        <meta name="description" content="for servers, made by a server" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <div>
         <button
           onClick={() => {
