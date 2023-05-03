@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import withAuth from "~/hoc/withAuth";
 import { RouterOutputs, api } from "~/utils/api";
 
-const CreateWizard = ({ ctx }) => {
+const CreateWizard = () => {
   const [input, setInput] = useState("");
+  const ctx = api.useContext();
+
   const {
     mutate: createBistro,
     isError: createError,
@@ -58,7 +60,7 @@ const Bistro = () => {
   return (
     <div>
       <h1 className="text-2xl">Bistro</h1>
-      <CreateWizard ctx={ctx} />
+      <CreateWizard />
 
       <div className="flex">
         {data?.map((elem) => {
