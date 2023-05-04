@@ -90,7 +90,6 @@ const PositionList = () => {
   const { data } = api.positions.getAllWithAssignedBistroUsers.useQuery({
     bistroId,
   });
-
   // data[0]?.bistroUserPositions
   const { mutate: deletePosition } = api.positions.delete.useMutation({
     onSuccess: ({}) => {
@@ -114,6 +113,8 @@ const PositionList = () => {
   return (
     <>
       {data?.map((r) => {
+        const { bistroUserPositions } = r;
+        // bistroUserPositions;
         return (
           <div key={r.id} className=" outline">
             <Position>
@@ -132,6 +133,13 @@ const PositionList = () => {
                   x
                 </button>
               </div>
+              {bistroUserPositions.map(({ bistroUser, id }) => {
+                return (
+                  <div key={id} className="m-1 outline">
+                    {bistroUser.user?.name}, {bistroUser.authority}
+                  </div>
+                );
+              })}
             </Position>
           </div>
         );

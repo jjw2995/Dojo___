@@ -41,7 +41,13 @@ export const positionRouter = createTRPCRouter({
     ({ ctx: { prisma, session } }) => {
       return prisma.position.findMany({
         where: { bistroId: session.bistroId },
-        include: { bistroUserPositions: {} },
+        include: {
+          bistroUserPositions: {
+            include: {
+              bistroUser: { include: { user: { select: { name: true } } } },
+            },
+          },
+        },
       });
     }
   ),
