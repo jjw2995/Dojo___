@@ -10,7 +10,7 @@ const CreateWizard = () => {
 
   const { mutate: createBistro } = api.bistro.create.useMutation({
     onSuccess: () => {
-      void ctx.bistro.getAll.invalidate();
+      void ctx.bistro.getAllUserIsPartOf.invalidate();
     },
   });
 
@@ -31,7 +31,7 @@ const CreateWizard = () => {
   );
 };
 
-type bistro = RouterOutputs["bistro"]["getAllPartOf"][number];
+type bistro = RouterOutputs["bistro"]["getAllUserIsPartOf"][number];
 const BistroItem = ({ bistro }: { bistro: bistro }) => {
   return (
     <ul className="m-1 rounded-sm outline">
@@ -41,14 +41,12 @@ const BistroItem = ({ bistro }: { bistro: bistro }) => {
   );
 };
 const Bistro = () => {
-  const { data } = api.bistro.getAllPartOf.useQuery();
+  const { data } = api.bistro.getAllUserIsPartOf.useQuery();
   const ctx = api.useContext();
-  const { mutate } = api.bistroUser.get.useMutation();
-  // console.log(bUser);
 
   const { mutate: deleteBistro } = api.bistro.delete.useMutation({
     onSuccess: () => {
-      void ctx.bistro.getAllPartOf.invalidate();
+      void ctx.bistro.getAllUserIsPartOf.invalidate();
     },
   });
 
@@ -61,19 +59,11 @@ const Bistro = () => {
         {data?.map((elem) => {
           return (
             <div key={elem.id} className="">
-              <BistroItem bistro={elem} />
-              <Link href={`/bistro/${elem.id}/home`}>link</Link>
-              <div>
-                <button
-                  onClick={() => {
-                    mutate({ bistroId: elem.id });
-                  }}
-                >
-                  get infos
-                </button>
-              </div>
+              <Link href={`/bistro/${elem.id}/home`}>
+                <BistroItem bistro={elem} />
+              </Link>
               <button
-                className="m-1 outline"
+                className="m-1 h-6 w-6 items-center justify-center outline"
                 onClick={() => {
                   deleteBistro({ bistroId: elem.id });
                 }}

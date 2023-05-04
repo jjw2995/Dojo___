@@ -6,6 +6,8 @@ import BistroLayout, {
 } from "~/components/layout/bistroLayout";
 import { RouterOutputs, api } from "~/utils/api";
 
+import * as Popover from "@radix-ui/react-popover";
+
 import PopoverDemo from "~/components/popover";
 
 const Home: NextPage = (p) => {
@@ -31,8 +33,7 @@ const PositionComponent = () => {
     <div className=" p-1 outline">
       Positions
       <CreatePostitionWizard />
-      {/* d */}
-      <PositionsView />
+      <PositionList />
     </div>
   );
 };
@@ -44,7 +45,7 @@ const CreatePostitionWizard = () => {
   const ctx = api.useContext();
   const { mutate } = api.positions.create.useMutation({
     onSuccess: ({}) => {
-      void ctx.positions.getAll.invalidate({ bistroId });
+      void ctx.positions.getAllWithAssignedBistroUsers.invalidate({ bistroId });
     },
     // onError: (e) => {
     //   alert("too short");
@@ -52,7 +53,7 @@ const CreatePostitionWizard = () => {
   });
 
   return (
-    <div className="m-1 flex items-center justify-center rounded p-1 outline">
+    <div className="m-1 my-2 flex items-center justify-between rounded px-1 outline">
       <input
         className=""
         type="text"
@@ -63,7 +64,7 @@ const CreatePostitionWizard = () => {
         }}
       />
       <button
-        className="rounded p-1 outline"
+        className="font-medium"
         onClick={() => {
           mutate({ postionName: name, bistroId });
         }}
@@ -74,16 +75,26 @@ const CreatePostitionWizard = () => {
   );
 };
 
-const PositionsView = () => {
+const Position = ({ children }) => {
+  return (
+    <>
+      <div>Position</div>
+      {children}
+    </>
+  );
+};
+
+const PositionList = () => {
   const { bistroId } = useBistroContext();
   const ctx = api.useContext();
-  const { data } = api.positions.getAll.useQuery({
+  const { data } = api.positions.getAllWithAssignedBistroUsers.useQuery({
     bistroId,
   });
 
+  // data[0]?.bistroUserPositions
   const { mutate: deletePosition } = api.positions.delete.useMutation({
     onSuccess: ({}) => {
-      void ctx.positions.getAll.invalidate({ bistroId });
+      void ctx.positions.getAllWithAssignedBistroUsers.invalidate({ bistroId });
     },
   });
 
@@ -94,25 +105,34 @@ const PositionsView = () => {
    * position2 +user
    * - user3, user5
    */
+  // console.log(data);
+
+  // const { data: buWithPos } = api.bistroUser.getAllWithPositions.useQuery({
+  //   bistroId,
+  // });
 
   return (
     <>
       {data?.map((r) => {
         return (
-          <div key={r.id} className="outline">
-            <div>{r.name}</div>
-            <button
-              className="outline"
-              onClick={() => {
-                deletePosition({ bistroId, positionId: r.id });
-              }}
-            >
-              x
-            </button>
-            <div>
-              <button className="outline">add user +</button>
-            </div>
-            <PopoverDemo />
+          <div key={r.id} className=" outline">
+            <Position>
+              <div className="m-1  flex justify-between ">
+                <div>
+                  <span>{r.name}</span>
+
+                  <PopoverPositionAssigner position={r} />
+                </div>
+                <button
+                  className=" content-center justify-center font-medium"
+                  onClick={() => {
+                    deletePosition({ bistroId, positionId: r.id });
+                  }}
+                >
+                  x
+                </button>
+              </div>
+            </Position>
           </div>
         );
       })}
@@ -120,11 +140,77 @@ const PositionsView = () => {
   );
 };
 
+type position = RouterOutputs["positions"]["create"];
+const PopoverPositionAssigner = ({ position }: { position: position }) => {
+  // const { bistroId } = useBistroContext();
+  const ctx = api.useContext();
+  const { bistroId, id: positionId } = position;
+  const { data: unassignedBistroUsers } =
+    api.bistroUser.getAllNotAssignedToPosition.useQuery({
+      bistroId,
+      positionId,
+    });
+
+  const {
+    mutate: assign,
+    data,
+    error,
+  } = api.bistroUser.assignPosition.useMutation({
+    onSuccess: () => {
+      ctx.bistroUser.getAllNotAssignedToPosition.invalidate({
+        bistroId,
+        positionId,
+      });
+    },
+  });
+  console.log(error);
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger className="m-1 rounded-lg px-1 outline">
+        asign user
+      </Popover.Trigger>
+      <Popover.Anchor />
+      <Popover.Portal>
+        <Popover.Content className="w-80 bg-slate-200">
+          <Popover.Close />
+          <Popover.Arrow />
+          show all unassigned users
+          {unassignedBistroUsers?.map((bistroUser) => {
+            // const { user } = bistroUser;
+
+            return (
+              <div key={bistroUser.id}>
+                <button
+                  onClick={() => {
+                    assign({
+                      bistroId,
+                      targetBistroUserId: bistroUser.id,
+                      targetPositionId: positionId,
+                    });
+                  }}
+                >
+                  {bistroUser.user.name}, {bistroUser.id}
+                </button>
+              </div>
+            );
+          })}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+};
+
 type BistroUserElem = RouterOutputs["bistroUser"]["getAll"][number];
-const BistroUsersView = (bistroUsers: BistroUserElem[]) => {
+const BistroUserList = (bistroUsers: BistroUserElem[]) => {
   return (
     <>
-      <div></div>
+      <div>
+        {bistroUsers.map((e) => {
+          const { userId } = e;
+          return <div></div>;
+        })}
+      </div>
     </>
   );
 };

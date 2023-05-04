@@ -3,19 +3,6 @@ import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const positionRouter = createTRPCRouter({
-  // getMemberInfo: protectedProcedure.query(({ ctx }) => {
-  //   // ctx.prisma.bistroUser.findUnique({
-  //   //   where: { bistroId_userId: { userId: ctx.session.user.id } },
-  //   // });
-  //   return 0;
-  // }),
-  getAll: protectedBistroMemberProcedure().query(
-    ({ ctx: { prisma, session } }) => {
-      return prisma.position.findMany({
-        where: { bistroId: session.bistroId },
-      });
-    }
-  ),
   create: protectedBistroMemberProcedure({ isModerator: true })
     .input(z.object({ postionName: z.string().min(1) }))
     .mutation(({ ctx, input }) => {
@@ -50,5 +37,22 @@ export const positionRouter = createTRPCRouter({
         });
       }
     }),
-  // assignPositionToBistroUser:
+  getAllWithAssignedBistroUsers: protectedBistroMemberProcedure().query(
+    ({ ctx: { prisma, session } }) => {
+      return prisma.position.findMany({
+        where: { bistroId: session.bistroId },
+        include: { bistroUserPositions: {} },
+      });
+    }
+  ),
+  getUnassignedBistroUsers: protectedBistroMemberProcedure()
+    .input(z.object({ positionId: z.string().cuid() }))
+    .query(({ ctx, input }) => {
+      return ctx.prisma.bistroUser.findMany({
+        where: {
+          bistroId: input.bistroId,
+          bistroUserPositions: { none: { positionId: input.positionId } },
+        },
+      });
+    }),
 });

@@ -36,7 +36,15 @@ const BistroLayout = <P extends PropsWithChildren>(
     const router = useRouter();
     const { isReady, query } = router;
     // console.log("in bistroLayout", query, isReady);
+
+    /**
+      
+(BistroUser & {bistro: Bistro;})[]
+     
+*/
+
     const { data, isFetched } = api.bistroUser.getAll.useQuery();
+    // api.bistro.getAllUserIsPartOf
 
     const [bistro, setBistro] = useState<dataType>();
 
