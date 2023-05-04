@@ -44,7 +44,7 @@ export const positionRouter = createTRPCRouter({
         include: {
           bistroUserPositions: {
             include: {
-              bistroUser: { include: { user: { select: { name: true } } } },
+              bistroUser: { include: { user: {} } },
             },
           },
         },

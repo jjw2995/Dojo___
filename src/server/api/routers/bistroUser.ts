@@ -47,9 +47,6 @@ export const bistroUserRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) => {
       const { targetBistroUserId, targetPositionId } = input;
-      // console.log(ctx);
-      // console.log(input);
-      // ctx.prisma.bistroUser.
 
       return ctx.prisma.bistroUserPosition.create({
         data: {
@@ -57,6 +54,17 @@ export const bistroUserRouter = createTRPCRouter({
           position: { connect: { id: targetPositionId } },
         },
         include: { bistroUser: {}, position: {} },
+      });
+    }),
+  unassignPosition: protectedBistroMemberProcedure({ isModerator: true })
+    .input(
+      z.object({
+        bistroUserPositionId: z.string().cuid(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.bistroUserPosition.delete({
+        where: { id: input.bistroUserPositionId },
       });
     }),
 });
