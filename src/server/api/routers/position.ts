@@ -37,7 +37,7 @@ export const positionRouter = createTRPCRouter({
         });
       }
     }),
-  getAllWithAssignedBistroUsers: protectedBistroMemberProcedure().query(
+  getAllWithAssignedMembers: protectedBistroMemberProcedure().query(
     ({ ctx: { prisma, session } }) => {
       return prisma.position.findMany({
         where: { bistroId: session.bistroId },
@@ -56,7 +56,7 @@ export const positionRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.prisma.bistroUser.findMany({
         where: {
-          bistroId: input.bistroId,
+          bistroId: ctx.bistroId,
           bistroUserPositions: { none: { positionId: input.positionId } },
         },
       });

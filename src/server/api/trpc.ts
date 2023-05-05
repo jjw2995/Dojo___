@@ -22,6 +22,9 @@ import { prisma } from "~/server/db";
 
 type CreateContextOptions = {
   session: Session | null;
+
+  // addon for bistro paths
+  bistroId?: string;
 };
 
 /**
@@ -38,6 +41,8 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
+    bistroId: opts.bistroId,
+    // inBistro: opts.inBistro,
   };
 };
 
@@ -52,11 +57,18 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
-  // req.
 
-  return createInnerTRPCContext({
-    session,
-  });
+  // ADD-ON: if bistro/[bistroId]/*, process and attach inBistro to session
+  // let mySession = { session };
+
+  const urlTokens = req.headers.referer?.split("/");
+  let index = urlTokens?.findIndex((elem) => elem === "bistro");
+  let bistroId;
+  if (index && urlTokens && urlTokens.length > index) {
+    bistroId = urlTokens[index + 1];
+  }
+
+  return createInnerTRPCContext({ session, bistroId });
 };
 
 /**
@@ -133,7 +145,6 @@ export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 // ============================================================
 // =======================add_on===============================
 // ============================================================
-
 /**
  * ADD_ON
  *
@@ -147,36 +158,45 @@ export const protectedBistroMemberProcedure = (
   } = { isModerator: false }
 ) => {
   const { isModerator, errMessage } = opts;
-  return protectedProcedure
-    .input(z.object({ bistroId: z.string().cuid() }))
-    .use(async ({ ctx, input: { bistroId }, next }) => {
-      // ctx.prisma.bistroUser
-      // Authority
-      const bistroUser = await ctx.prisma.bistroUser.findFirst({
-        where: isModerator
-          ? { authority: "MODERATOR", bistroId, userId: ctx.session.user.id }
-          : { bistroId, userId: ctx.session.user.id },
+  return protectedProcedure.use(async ({ ctx, next }) => {
+    if (!ctx.bistroId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "bistroId not found in URL",
       });
+    }
+    console.log("bistroId from req headers referer", ctx.bistroId);
 
-      if (!bistroUser) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: `user [${ctx.session.user.id}] is not ${
-            isModerator ? "moderator" : "member"
-          } of the Bistro. ${errMessage ? errMessage : ""}`,
-        });
-      }
-      return next({
-        ctx: {
-          // ...ctx,
-          // infers the `session` as non-nullable
-          session: {
-            ...ctx.session,
-            bistroId,
-            bistroUserId: bistroUser.id,
-            authority: bistroUser.authority,
-          },
-        },
-      });
+    // if(ctx.bistroId)
+    const bistroUser = await ctx.prisma.bistroUser.findFirst({
+      where: isModerator
+        ? {
+            authority: "MODERATOR",
+            bistroId: ctx.bistroId,
+            userId: ctx.session.user.id,
+          }
+        : { bistroId: ctx.bistroId, userId: ctx.session.user.id },
     });
+
+    if (!bistroUser) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: `user [${ctx.session.user.id}] is not ${
+          isModerator ? "moderator" : "member"
+        } of the Bistro. ${errMessage ? errMessage : ""}`,
+      });
+    }
+    return next({
+      ctx: {
+        // ...ctx,
+        // infers the `session` as non-nullable
+        session: {
+          ...ctx.session,
+          bistroId: ctx.bistroId,
+          bistroUserId: bistroUser.id,
+          authority: bistroUser.authority,
+        },
+      },
+    });
+  });
 };

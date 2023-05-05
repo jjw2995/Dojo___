@@ -6,6 +6,7 @@ import {
 } from "../trpc";
 
 export const bistroUserRouter = createTRPCRouter({
+  // getAll
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.bistroUser.findMany({
       where: { userId: ctx.session.user.id },
@@ -17,20 +18,18 @@ export const bistroUserRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       return ctx.prisma.bistroUser.findMany({
         where: {
-          bistroId: input.bistroId,
+          bistroId: ctx.bistroId,
           bistroUserPositions: { none: { positionId: input.positionId } },
         },
         include: { user: { select: { name: true } } },
       });
     }),
-  getAllWithPositions: protectedBistroMemberProcedure().query(
-    ({ ctx, input }) => {
-      return ctx.prisma.bistroUser.findMany({
-        where: { bistroId: input.bistroId },
-        include: { bistroUserPositions: {} },
-      });
-    }
-  ),
+  getAllWithPositions: protectedBistroMemberProcedure().query(({ ctx }) => {
+    return ctx.prisma.bistroUser.findMany({
+      where: { bistroId: ctx.bistroId },
+      include: { bistroUserPositions: {} },
+    });
+  }),
   get: protectedProcedure
     .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input }) => {

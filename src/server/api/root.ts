@@ -15,7 +15,7 @@ export const appRouter = createTRPCRouter({
   bistro: bistroRouter,
   bistroUser: bistroUserRouter,
   pay: payRouter,
-  positions: positionRouter,
+  position: positionRouter,
 });
 
 // export type definition of API

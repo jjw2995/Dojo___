@@ -33,7 +33,7 @@ const PositionComponent = () => {
     <div className=" p-1 outline">
       Positions
       <CreatePostitionWizard />
-      <PositionList />
+      <Positions />
     </div>
   );
 };
@@ -43,9 +43,9 @@ const CreatePostitionWizard = () => {
   const { bistroId, authority } = useBistroContext();
 
   const ctx = api.useContext();
-  const { mutate } = api.positions.create.useMutation({
+  const { mutate } = api.position.create.useMutation({
     onSuccess: ({}) => {
-      void ctx.positions.getAllWithAssignedBistroUsers.invalidate({ bistroId });
+      void ctx.position.getAllWithAssignedMembers.invalidate({ bistroId });
     },
   });
 
@@ -81,22 +81,22 @@ const Position = ({ children }) => {
   );
 };
 
-const PositionList = () => {
+const Positions = () => {
   const { bistroId } = useBistroContext();
   const ctx = api.useContext();
   const { data: getAllWithAssignedBistroUsers } =
-    api.positions.getAllWithAssignedBistroUsers.useQuery({
+    api.position.getAllWithAssignedMembers.useQuery({
       bistroId,
     });
-  const { mutate: deletePosition } = api.positions.delete.useMutation({
+  const { mutate: deletePosition } = api.position.delete.useMutation({
     onSuccess: ({}) => {
-      void ctx.positions.getAllWithAssignedBistroUsers.invalidate({ bistroId });
+      void ctx.position.getAllWithAssignedMembers.invalidate({ bistroId });
     },
   });
   const { mutate: unassignPosition } =
     api.bistroUser.unassignPosition.useMutation({
       onSuccess: ({}) => {
-        void ctx.positions.getAllWithAssignedBistroUsers.invalidate({
+        void ctx.position.getAllWithAssignedMembers.invalidate({
           bistroId,
         });
       },
@@ -113,10 +113,7 @@ const PositionList = () => {
   return (
     <>
       {getAllWithAssignedBistroUsers?.map((r) => {
-        // console.log(r);
         const { bistroUserPositions } = r;
-        // bistroUserPositions[0].
-        // bistroUserPositions;
         return (
           <div key={r.id} className=" outline">
             <Position>
@@ -136,8 +133,6 @@ const PositionList = () => {
                 </button>
               </div>
               {bistroUserPositions.map((r) => {
-                console.log(r);
-
                 return (
                   <div key={r.id} className="m-1 outline">
                     {r.bistroUser.user?.name}, {r.bistroUser.authority}
@@ -163,7 +158,7 @@ const PositionList = () => {
   );
 };
 
-type position = RouterOutputs["positions"]["create"];
+type position = RouterOutputs["position"]["create"];
 const PopoverPositionAssigner = ({ position }: { position: position }) => {
   const ctx = api.useContext();
   const { bistroId, id: positionId } = position;
@@ -222,8 +217,8 @@ const PopoverPositionAssigner = ({ position }: { position: position }) => {
   );
 };
 
-type BistroUserElem = RouterOutputs["bistroUser"]["getAll"][number];
-const BistroUserList = (bistroUsers: BistroUserElem[]) => {
+type BistroUser = RouterOutputs["bistroUser"]["getAll"][number];
+const BistroUserList = (bistroUsers: BistroUser[]) => {
   return (
     <>
       <div>
@@ -234,6 +229,11 @@ const BistroUserList = (bistroUsers: BistroUserElem[]) => {
       </div>
     </>
   );
+};
+
+const BistroUser = (bistroUser: BistroUser) => {
+  const { authority } = bistroUser;
+  return <></>;
 };
 
 export default BistroLayout(Home);
