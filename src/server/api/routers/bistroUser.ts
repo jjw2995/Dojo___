@@ -15,14 +15,20 @@ export const bistroUserRouter = createTRPCRouter({
   }),
   getAllNotAssignedToPosition: protectedBistroMemberProcedure()
     .input(z.object({ positionId: z.string().cuid() }))
-    .query(({ ctx, input }) => {
-      return ctx.prisma.bistroUser.findMany({
+    .query(async ({ ctx, input }) => {
+      const res = await ctx.prisma.bistroUser.findMany({
         where: {
           bistroId: ctx.bistroId,
           bistroUserPositions: { none: { positionId: input.positionId } },
         },
         include: { user: { select: { name: true } } },
       });
+
+      const myBistroUsersObj = res.map((r) => {
+        const { authority, id, user } = r;
+        return { authority, id, name: user.name };
+      });
+      return myBistroUsersObj;
     }),
   getAllWithPositions: protectedBistroMemberProcedure().query(({ ctx }) => {
     return ctx.prisma.bistroUser.findMany({

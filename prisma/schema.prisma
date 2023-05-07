@@ -58,6 +58,7 @@ model BistroUser {
   authority Authority
 
   bistroUserPositions BistroUserPosition[]
+  TipContribution     TipContribution[]
 
   @@unique([bistroId, userId])
 }
@@ -93,6 +94,8 @@ model TipContribution {
   hours                 Int                @db.UnsignedTinyInt
   bistroUserPosition    BistroUserPosition @relation(fields: [bistroUserPositionId], references: [id])
   bistroUserPositionId  String
+  bistroUser            BistroUser         @relation(fields: [bistroUserId], references: [id])
+  bistroUserId          String
 }
 
 model User {

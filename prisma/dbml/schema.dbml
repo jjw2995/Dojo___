@@ -44,6 +44,7 @@ Table BistroUser {
   user User [not null]
   authority Authority [not null]
   bistroUserPositions BistroUserPosition [not null]
+  TipContribution TipContribution [not null]
 
   indexes {
     (bistroId, userId) [unique]
@@ -81,6 +82,8 @@ Table TipContribution {
   hours Int [not null]
   bistroUserPosition BistroUserPosition [not null]
   bistroUserPositionId String [not null]
+  bistroUser BistroUser [not null]
+  bistroUserId String [not null]
 }
 
 Table User {
@@ -142,6 +145,8 @@ Ref: BistroUserPosition.positionId > Position.id
 Ref: Position.bistroId > Bistro.id
 
 Ref: TipContribution.bistroUserPositionId > BistroUserPosition.id
+
+Ref: TipContribution.bistroUserId > BistroUser.id
 
 Ref: Account.userId > User.id [delete: Cascade]
 

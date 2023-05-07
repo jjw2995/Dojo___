@@ -1,14 +1,14 @@
 import { NextPage } from "next";
 import React from "react";
 import { useState } from "react";
-import BistroLayout, {
-  useBistroContext,
-} from "~/components/layout/bistroLayout";
+import BistroLayout from "~/components/layout/bistroLayout";
 import { RouterOutputs, api } from "~/utils/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
+// import * as Popover from "@radix-ui/react-popover";
 
-import * as Popover from "@radix-ui/react-popover";
-
-import PopoverDemo from "~/components/popover";
+import { Authority } from "@prisma/client";
+import { Popover } from "@headlessui/react";
 
 const Home: NextPage = (p) => {
   /**
@@ -19,33 +19,21 @@ const Home: NextPage = (p) => {
    */
   return (
     <>
-      <PositionComponent />
+      <CreatePostitionWizard />
+      <Positions />
     </>
   );
 };
 /**
  */
 
-const PositionComponent = () => {
-  const { authority } = useBistroContext();
-
-  return (
-    <div className=" p-1 outline">
-      Positions
-      <CreatePostitionWizard />
-      <Positions />
-    </div>
-  );
-};
-
 const CreatePostitionWizard = () => {
   const [name, setName] = useState("");
-  const { bistroId, authority } = useBistroContext();
 
   const ctx = api.useContext();
   const { mutate } = api.position.create.useMutation({
     onSuccess: ({}) => {
-      void ctx.position.getAllWithAssignedMembers.invalidate({ bistroId });
+      void ctx.position.getAllWithAssignedMembers.invalidate();
     },
   });
 
@@ -63,7 +51,7 @@ const CreatePostitionWizard = () => {
       <button
         className="font-medium"
         onClick={() => {
-          mutate({ postionName: name, bistroId });
+          mutate({ postionName: name });
         }}
       >
         create
@@ -72,168 +60,238 @@ const CreatePostitionWizard = () => {
   );
 };
 
-const Position = ({ children }) => {
-  return (
-    <>
-      <div>Position</div>
-      {children}
-    </>
-  );
-};
-
+type positionWithAssingedBistroUsers =
+  RouterOutputs["position"]["getAllWithAssignedMembers"];
 const Positions = () => {
-  const { bistroId } = useBistroContext();
   const ctx = api.useContext();
-  const { data: getAllWithAssignedBistroUsers } =
-    api.position.getAllWithAssignedMembers.useQuery({
-      bistroId,
-    });
+
+  const { data: positionsWithAssignedMembers } =
+    api.position.getAllWithAssignedMembers.useQuery();
+
   const { mutate: deletePosition } = api.position.delete.useMutation({
     onSuccess: ({}) => {
-      void ctx.position.getAllWithAssignedMembers.invalidate({ bistroId });
+      void ctx.position.getAllWithAssignedMembers.invalidate();
     },
   });
+
   const { mutate: unassignPosition } =
     api.bistroUser.unassignPosition.useMutation({
       onSuccess: ({}) => {
-        void ctx.position.getAllWithAssignedMembers.invalidate({
-          bistroId,
-        });
+        void ctx.position.getAllWithAssignedMembers.invalidate();
       },
     });
 
-  /**
-   * position +user
-   * - user1, user4
-   *
-   * position2 +user
-   * - user3, user5
-   */
-
   return (
     <>
-      {getAllWithAssignedBistroUsers?.map((r) => {
-        const { bistroUserPositions } = r;
-        return (
-          <div key={r.id} className=" outline">
-            <Position>
-              <div className="m-1  flex justify-between ">
-                <div>
-                  <span>{r.name}</span>
-
-                  <PopoverPositionAssigner position={r} />
-                </div>
-                <button
-                  className=" content-center justify-center font-medium"
-                  onClick={() => {
-                    deletePosition({ bistroId, positionId: r.id });
-                  }}
-                >
-                  x
-                </button>
-              </div>
-              {bistroUserPositions.map((r) => {
-                return (
-                  <div key={r.id} className="m-1 outline">
-                    {r.bistroUser.user?.name}, {r.bistroUser.authority}
-                    <button
-                      className="m-1 rounded p-1 outline"
-                      onClick={() => {
-                        unassignPosition({
-                          bistroUserPositionId: r.id,
-                          bistroId,
-                        });
-                      }}
-                    >
-                      x
-                    </button>
-                  </div>
-                );
-              })}
-            </Position>
-          </div>
-        );
+      {positionsWithAssignedMembers?.map((position) => {
+        return <Position position={position} />;
       })}
     </>
   );
 };
 
-type position = RouterOutputs["position"]["create"];
-const PopoverPositionAssigner = ({ position }: { position: position }) => {
+const Position = ({ position }) => {
+  return (
+    <div key={position.id} className=" overflow-hidden p-2 outline">
+      <div
+        className="m-1 flex place-content-around content-around
+            justify-between align-middle"
+      >
+        <div className="flex place-content-between content-between justify-between">
+          <div className="flex">
+            <div className="mr-1 text-3xl font-bold">{position.name},</div>
+            <div className="text-xs font-thin">
+              <div>$16.45/hr</div>
+              <div>tip*{position.positionTipProportion}.7</div>
+            </div>
+          </div>
+          <HLDPOP positionId={position.id} />
+        </div>
+        <button
+          className=" content-center justify-center font-medium"
+          onClick={() => {
+            deletePosition({ positionId: position.id });
+          }}
+        >
+          x
+        </button>
+      </div>
+      <div className="flex overflow-x-auto pb-2 ">
+        {[...position.bistroUsers, ...position.bistroUsers].map((v, idx) => {
+          return (
+            <div key={idx} className="m-1 rounded shadow-lg outline">
+              <div>
+                <button
+                  className="p-1 font-medium"
+                  onClick={() => {
+                    unassignPosition({
+                      bistroUserPositionId: v.bistroUserPositionId,
+                    });
+                  }}
+                >
+                  x
+                </button>
+              </div>
+              <BistroUser bistroUser={v} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const HLDPOP = ({ positionId }: { positionId: string }) => {
   const ctx = api.useContext();
-  const { bistroId, id: positionId } = position;
   const { data: unassignedBistroUsers } =
     api.bistroUser.getAllNotAssignedToPosition.useQuery({
-      bistroId,
       positionId,
     });
 
   const {
-    mutate: assign,
+    mutate: assignPosition,
     data,
     error,
   } = api.bistroUser.assignPosition.useMutation({
     onSuccess: () => {
       ctx.bistroUser.getAllNotAssignedToPosition.invalidate({
-        bistroId,
         positionId,
       });
     },
   });
 
   return (
-    <Popover.Root>
-      <Popover.Trigger className="m-1 rounded-lg px-1 outline">
+    <Popover>
+      <Popover.Button className="m-1 rounded-lg px-1 outline">
         assign user
-      </Popover.Trigger>
-      <Popover.Anchor />
-      <Popover.Portal>
-        <Popover.Content className="w-80 bg-slate-200">
-          <Popover.Close />
-          <Popover.Arrow />
-          show all unassigned users
-          {unassignedBistroUsers?.map((bistroUser) => {
-            // const { user } = bistroUser;
-
-            return (
-              <div key={bistroUser.id}>
-                <button
-                  onClick={() => {
-                    assign({
-                      bistroId,
-                      targetBistroUserId: bistroUser.id,
-                      targetPositionId: positionId,
-                    });
-                  }}
-                >
-                  {bistroUser.user.name}, {bistroUser.id}
-                </button>
-              </div>
-            );
-          })}
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+      </Popover.Button>
+      <Popover.Panel className="absolute left-1/2 w-[80%] -translate-x-1/2 flex-col bg-slate-200">
+        <div className="flex overflow-x-scroll pb-2">
+          {unassignedBistroUsers &&
+            [
+              ...unassignedBistroUsers,
+              ...unassignedBistroUsers,
+              ...unassignedBistroUsers,
+            ]?.map((bistroUser, idx) => {
+              return (
+                <div key={idx} className="m-1 rounded shadow-lg outline">
+                  <button
+                    onClick={() => {
+                      assignPosition({
+                        targetBistroUserId: bistroUser.id,
+                        targetPositionId: positionId,
+                      });
+                    }}
+                  >
+                    <BistroUser bistroUser={{ ...bistroUser }} />
+                  </button>
+                </div>
+              );
+            })}
+        </div>
+      </Popover.Panel>
+    </Popover>
   );
 };
 
-type BistroUser = RouterOutputs["bistroUser"]["getAll"][number];
-const BistroUserList = (bistroUsers: BistroUser[]) => {
+// const PopoverPositionAssigner = ({ positionId }: { positionId: string }) => {
+//   const ctx = api.useContext();
+//   const { data: unassignedBistroUsers } =
+//     api.bistroUser.getAllNotAssignedToPosition.useQuery({
+//       positionId,
+//     });
+
+//   const {
+//     mutate: assignPosition,
+//     data,
+//     error,
+//   } = api.bistroUser.assignPosition.useMutation({
+//     onSuccess: () => {
+//       ctx.bistroUser.getAllNotAssignedToPosition.invalidate({
+//         positionId,
+//       });
+//     },
+//   });
+
+//   return (
+//     <Popover.Root>
+//       <Popover.Trigger className="m-1 rounded-lg px-1 outline">
+//         assign user
+//       </Popover.Trigger>
+//       <Popover.Anchor />
+//       <Popover.Portal className="flex overflow-x-auto bg-slate-200 pb-2">
+//         <Popover.Content
+//           className="flex overflow-x-auto bg-slate-200 pb-2"
+//           asChild
+//         >
+//           <>
+//             {/* <Popover.Content className="bg-slate-200 "> */}
+//             {/* <Popover.Close />
+//             <Popover.Arrow /> */}
+//             show all unassigned users
+//             <div className="flex overflow-scroll">
+//               {/* <div className="flex overflow-x-auto pb-2"> */}
+//               {unassignedBistroUsers &&
+//                 [
+//                   ...unassignedBistroUsers,
+//                   ...unassignedBistroUsers,
+//                   ...unassignedBistroUsers,
+//                 ]?.map((bistroUser, idx) => {
+//                   // const { user } = bistroUser;
+
+//                   return (
+//                     <div key={idx} className="m-1 rounded outline">
+//                       <button
+//                         onClick={() => {
+//                           assignPosition({
+//                             targetBistroUserId: bistroUser.id,
+//                             targetPositionId: positionId,
+//                           });
+//                         }}
+//                       >
+//                         <BistroUser bistroUser={{ ...bistroUser }} />
+//                       </button>
+//                     </div>
+//                   );
+//                 })}
+//             </div>
+//             {/* </div> */}
+//           </>
+//         </Popover.Content>
+//       </Popover.Portal>
+//     </Popover.Root>
+//   );
+// };
+
+// type BistroUser =
+//   positionWithAssingedBistroUsers[number]["bistroUsers"][number];
+const BistroUser = ({
+  bistroUser,
+}: {
+  bistroUser: {
+    name: string | null;
+    authority: Authority;
+    tipPercent?: number;
+    id: string;
+    image?: string | null;
+  };
+}) => {
+  const { authority, id, image, name, tipPercent } = bistroUser;
+  /**
+   * show
+   * - Authority
+   * - name
+   *
+   */
   return (
-    <>
-      <div>
-        {bistroUsers.map((e) => {
-          const { userId } = e;
-          return <div></div>;
-        })}
-      </div>
-    </>
+    <div className="w-24 flex-col content-center ">
+      {/* <>{image}</> */}
+      <div>{name}</div>
+      <div>{authority === "MODERATOR" ? "modr" : "user"}</div>
+      {/* <div>{id}</div> */}
+      {tipPercent && <div>{tipPercent}%</div>}
+    </div>
   );
-};
-
-const BistroUser = (bistroUser: BistroUser) => {
-  const { authority } = bistroUser;
-  return <></>;
 };
 
 export default BistroLayout(Home);

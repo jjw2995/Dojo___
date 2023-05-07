@@ -1,11 +1,39 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
+
+// return prisma.position.findMany({
+//   where: { bistroId: session.bistroId },
+//   include: {
+//     bistroUserPositions: {
+//       include: {
+//         bistroUser: { include: { user: {} } },
+//       },
+//     },
+//   },
+// });
+// }
+
+type getAllWithAssignedMembersType = Prisma.PositionGetPayload<{
+  include: {
+    bistroUserPositions: { include: { bistroUser: { include: { user: {} } } } };
+  };
+}>[];
+
+// const flattenPosition = (data: getAllWithAssignedMembersType) => {
+//   data.forEach((r)=>{
+//     r
+//   })
+// };
+
+// const flatten
 
 export const positionRouter = createTRPCRouter({
   create: protectedBistroMemberProcedure({ isModerator: true })
     .input(z.object({ postionName: z.string().min(1) }))
     .mutation(({ ctx, input }) => {
+      // ctxprisma.
       return ctx.prisma.position.create({
         data: { name: input.postionName, bistroId: ctx.session.bistroId },
       });
@@ -38,8 +66,8 @@ export const positionRouter = createTRPCRouter({
       }
     }),
   getAllWithAssignedMembers: protectedBistroMemberProcedure().query(
-    ({ ctx: { prisma, session } }) => {
-      return prisma.position.findMany({
+    async ({ ctx: { prisma, session } }) => {
+      const res = await prisma.position.findMany({
         where: { bistroId: session.bistroId },
         include: {
           bistroUserPositions: {
@@ -49,6 +77,39 @@ export const positionRouter = createTRPCRouter({
           },
         },
       });
+
+      /**
+       *  (Position & {bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})[]})[]
+       *  bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})[]
+       *  bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})
+       */
+      //
+      const myPositionsObj = res.map((position) => {
+        const { bistroUserPositions, bistroId, ...rest } = position;
+        return {
+          ...rest,
+          bistroUsers: bistroUserPositions.map((b) => {
+            const { bistroUser, tipPercent, id: bistroUserPositionId } = b;
+            const {
+              authority,
+              user: { name, image },
+              id,
+            } = bistroUser;
+            return {
+              name,
+              authority,
+              tipPercent,
+              id,
+              image,
+              bistroUserPositionId,
+            };
+          }),
+        };
+      });
+
+      // myPositionObj[0]?.bistroUser[0].
+
+      return myPositionsObj;
     }
   ),
   getUnassignedBistroUsers: protectedBistroMemberProcedure()
@@ -59,6 +120,7 @@ export const positionRouter = createTRPCRouter({
           bistroId: ctx.bistroId,
           bistroUserPositions: { none: { positionId: input.positionId } },
         },
+        include: { user: { select: { name: true } } },
       });
     }),
 });

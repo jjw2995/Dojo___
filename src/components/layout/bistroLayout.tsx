@@ -1,32 +1,17 @@
 import { useRouter } from "next/router";
-import React, {
-  type PropsWithChildren,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { type PropsWithChildren, useEffect, useState } from "react";
 import WithAuth from "~/hoc/withAuth";
 import { type RouterOutputs, api } from "~/utils/api";
 import { links } from "~/utils/links";
 import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
-const bistroContext = createContext<dataType | undefined>(undefined);
-
-export const useBistroContext = () => {
-  const bistro = useContext(bistroContext);
-  if (bistro === undefined) {
-    throw new Error("useBistroContext must be within BistroProvier");
-  }
-  return bistro;
-};
 
 const BistroLayout = <P extends PropsWithChildren>(
   Component: React.ComponentType<P>
 ) => {
   /**
-   * TODO:
+   * TODO: remove this
    * check user is a member of Bistro
    *
    * True: pass down bistroUser as prop
@@ -35,13 +20,6 @@ const BistroLayout = <P extends PropsWithChildren>(
   const Wrap = (props: P) => {
     const router = useRouter();
     const { isReady, query } = router;
-    // console.log("in bistroLayout", query, isReady);
-
-    /**
-      
-(BistroUser & {bistro: Bistro;})[]
-     
-*/
 
     const { data, isFetched } = api.bistroUser.getAll.useQuery();
     // api.bistro.getAllUserIsPartOf
@@ -68,9 +46,7 @@ const BistroLayout = <P extends PropsWithChildren>(
     return isReady && bistro ? (
       <>
         <Nav bistro={bistro} />
-        <bistroContext.Provider value={bistro}>
-          <Component {...{ ...props }} />
-        </bistroContext.Provider>
+        <Component {...{ ...props }} />
       </>
     ) : null;
   };

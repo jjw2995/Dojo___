@@ -11,7 +11,6 @@ import { bistroUserRouter } from "./routers/bistroUser";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  // example: exampleRouter,
   bistro: bistroRouter,
   bistroUser: bistroUserRouter,
   pay: payRouter,

@@ -58,9 +58,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
 
-  // ADD-ON: if bistro/[bistroId]/*, process and attach inBistro to session
-  // let mySession = { session };
-
+  // ADD-ON: if bistro/[bistroId]/*, attach bistroId for processing later
   const urlTokens = req.headers.referer?.split("/");
   let index = urlTokens?.findIndex((elem) => elem === "bistro");
   let bistroId;
@@ -80,7 +78,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { z, ZodError } from "zod";
+import { ZodError } from "zod";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -165,9 +163,7 @@ export const protectedBistroMemberProcedure = (
         message: "bistroId not found in URL",
       });
     }
-    console.log("bistroId from req headers referer", ctx.bistroId);
 
-    // if(ctx.bistroId)
     const bistroUser = await ctx.prisma.bistroUser.findFirst({
       where: isModerator
         ? {
@@ -200,3 +196,31 @@ export const protectedBistroMemberProcedure = (
     });
   });
 };
+
+// /** Reusable middleware that enforces users are logged in before running the procedure. */
+// const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+//   if (!ctx.session || !ctx.session.user) {
+//     throw new TRPCError({ code: "UNAUTHORIZED" });
+//   }
+//   return next({
+//     ctx: {
+//       // infers the `session` as non-nullable
+//       session: { ...ctx.session, user: ctx.session.user },
+//     },
+//   });
+// });
+
+// const enforceUserisBistroMember = t.procedure.use(enforceUserIsAuthed)..middleware(async ({ ctx, next }) => {
+//   if (!ctx.bistroId) {
+//     throw new TRPCError({
+//       code: "BAD_REQUEST",
+//       message: "bistroId not found in URL",
+//     });
+//   }
+//   const bistroUser = prisma.bistroUser
+//   return next({ ctx });
+// });
+
+// const enforceUserisBistroMod = t.middleware(({ ctx, next }) => {
+//   return next({ ctx });
+// });

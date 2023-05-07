@@ -6,12 +6,21 @@ management application for restaurants
 
 ## Features
 
+#### main
+
+_Moderator_
+
+- [x] CRUD bistro
+- []
+- []
+- []
+
 #### general auth & navigation
 
 - [x] social login
 - [x] basic routes/pages
 - [ ] redirect
-- [ ] invite
+- [ ] invitef
 
 #### pages
 
@@ -19,7 +28,7 @@ management application for restaurants
   - [ ] positions
     - [x] create & delete
     - [x] view
-    - [ ] assign user
+    - [x] assign user
 - [ ] Pay
   - [ ] Tip
 - [ ] Menu
