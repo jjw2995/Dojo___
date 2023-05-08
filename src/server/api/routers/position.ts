@@ -3,39 +3,31 @@ import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 
-// return prisma.position.findMany({
-//   where: { bistroId: session.bistroId },
-//   include: {
-//     bistroUserPositions: {
-//       include: {
-//         bistroUser: { include: { user: {} } },
-//       },
-//     },
-//   },
-// });
-// }
-
 type getAllWithAssignedMembersType = Prisma.PositionGetPayload<{
   include: {
     bistroUserPositions: { include: { bistroUser: { include: { user: {} } } } };
   };
 }>[];
 
-// const flattenPosition = (data: getAllWithAssignedMembersType) => {
-//   data.forEach((r)=>{
-//     r
-//   })
-// };
-
-// const flatten
-
 export const positionRouter = createTRPCRouter({
   create: protectedBistroMemberProcedure({ isModerator: true })
-    .input(z.object({ postionName: z.string().min(1) }))
+    .input(
+      z.object({
+        postionName: z.string().min(1),
+        hourlyRate: z.number().min(0),
+        positionTipPercent: z.number().min(0).max(100),
+      })
+    )
     .mutation(({ ctx, input }) => {
+      const { hourlyRate, positionTipPercent, postionName } = input;
       // ctxprisma.
       return ctx.prisma.position.create({
-        data: { name: input.postionName, bistroId: ctx.session.bistroId },
+        data: {
+          name: postionName,
+          bistroId: ctx.session.bistroId,
+          hourlyRate,
+          positionTipPercent,
+        },
       });
     }),
   delete: protectedBistroMemberProcedure({ isModerator: true })
@@ -85,9 +77,17 @@ export const positionRouter = createTRPCRouter({
        */
       //
       const myPositionsObj = res.map((position) => {
-        const { bistroUserPositions, bistroId, ...rest } = position;
+        const {
+          bistroUserPositions,
+          bistroId,
+          positionTipPercent,
+          hourlyRate,
+          ...rest
+        } = position;
         return {
           ...rest,
+          positionTipPercent: positionTipPercent.toNumber(),
+          hourlyRate: hourlyRate.toNumber(),
           bistroUsers: bistroUserPositions.map((b) => {
             const { bistroUser, tipPercent, id: bistroUserPositionId } = b;
             const {
@@ -98,7 +98,7 @@ export const positionRouter = createTRPCRouter({
             return {
               name,
               authority,
-              tipPercent,
+              tipPercent: tipPercent.toNumber(),
               id,
               image,
               bistroUserPositionId,
