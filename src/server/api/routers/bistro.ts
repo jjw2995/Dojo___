@@ -31,7 +31,6 @@ export const bistroRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input: { bistroId } }) => {
-      // ctx.prisma.bistro.deleteMany({where:{}})
       /**
        * isMod && mod > 1 flag
        * isMod && mod = 1 delete

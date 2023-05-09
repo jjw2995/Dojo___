@@ -86,7 +86,7 @@ export const positionRouter = createTRPCRouter({
         } = position;
         return {
           ...rest,
-          positionTipPercent: positionTipPercent.toNumber(),
+          positionTipPercent,
           hourlyRate: hourlyRate.toNumber(),
           bistroUsers: bistroUserPositions.map((b) => {
             const { bistroUser, tipPercent, id: bistroUserPositionId } = b;
@@ -98,7 +98,7 @@ export const positionRouter = createTRPCRouter({
             return {
               name,
               authority,
-              tipPercent: tipPercent.toNumber(),
+              tipPercent: tipPercent,
               id,
               image,
               bistroUserPositionId,
