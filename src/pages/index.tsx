@@ -1,15 +1,26 @@
 import { type NextPage } from "next";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { links } from "~/utils/links";
 
 const Main: NextPage = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
   //
+
+  if (session && session.user) {
+    router.replace(links.bistro);
+  }
+
   return (
     <>
-      <div>
+      <div className="flex-col">
+        <div>landing page</div>
         <button
+          className="outline"
           onClick={() => {
             // signIn("google");
-            void signIn("google", { callbackUrl: "/bistro" });
+            void signIn(undefined, { callbackUrl: "/bistro" });
           }}
         >
           Sign in with Google

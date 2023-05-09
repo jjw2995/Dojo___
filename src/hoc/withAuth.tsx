@@ -1,10 +1,11 @@
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, {
   type ComponentType,
   type PropsWithChildren,
   useEffect,
 } from "react";
+import { links } from "~/utils/links";
 
 function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
   // const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
@@ -14,6 +15,8 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
     const authorized = sessionStatus === "authenticated";
     const unAuthorized = sessionStatus === "unauthenticated";
     const loading = sessionStatus === "loading";
+    // console.log(router.query);
+    // console.log(router);
 
     useEffect(() => {
       // check if the session is loading or the router is not ready
@@ -22,13 +25,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
       // if the user is not authorized, redirect to the login page
       // with a return url to the current page
       if (unAuthorized) {
-        // console.log("not authorized: ", router);
-        void router.push({
-          pathname: "/login",
-          // query: { returnUrl: router.asPath },
-        });
-      } else {
-        // console.log("authorized: ", router);
+        signIn(undefined, { callbackUrl: router.asPath });
       }
     }, [loading, unAuthorized, sessionStatus, router]);
 
@@ -44,7 +41,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
           <button
             className="font-bold"
             onClick={() => {
-              void signOut();
+              void signOut({ callbackUrl: links.base });
             }}
           >
             SignOut
@@ -53,7 +50,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
         <Component {...props} />
       </div>
     ) : (
-      <></>
+      <>redirecting to login...</>
     );
   };
   return Wrapper;

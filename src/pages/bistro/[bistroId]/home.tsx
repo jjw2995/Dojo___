@@ -18,29 +18,42 @@ const Home: NextPage = (p) => {
    * - with tip% hourRate
    */
   return (
-    <div className="">
-      <div className="text-lg font-bold">
-        Users
+    <>
+      <div>
+        <span className="text-lg font-bold">Users</span>
         <div className="rounded p-1 outline">
           <PendingMembers />
           <Members />
-          {/* <CreatePostitionWizard />
-          <Positions /> */}
         </div>
       </div>
-      <div className="text-lg font-bold">
-        Positions
+
+      <div>
+        <span className="text-lg font-bold">Positions</span>
         <div className="rounded p-1 outline">
           <CreatePostitionWizard />
           <Positions />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
 const Members = () => {
-  return <div>Members</div>;
+  return (
+    <div className="font text-base">
+      Members
+      <div>invitation link button</div>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          alert("invite link has been copied");
+        }}
+        className="font-semibold text-slate-500"
+      >
+        copy invite link
+      </button>
+    </div>
+  );
 };
 
 const PendingMembers = () => {

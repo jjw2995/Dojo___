@@ -13,14 +13,15 @@ _Moderator_
 - [x] CRUD bistro
 - []
 - []
-- []
+- [] bistro invite link, join bistro request flow
+- [] join bistro request
 
 #### general auth & navigation
 
 - [x] social login
 - [x] basic routes/pages
 - [ ] redirect
-- [ ] invitef
+- [ ] invite
 
 #### pages
 

@@ -1,8 +1,15 @@
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/router";
+import { links } from "~/utils/links";
+
 const Login = () => {
-  return (
-    <>
-      <h1>login page</h1>
-    </>
-  );
+  const router = useRouter();
+  const { isReady, query } = router;
+
+  if (!isReady) return <div>Loading...</div>;
+
+  return query && query.returnUrl
+    ? void signIn(undefined, { callbackUrl: router.query.returnUrl as string })
+    : void signIn(undefined, { callbackUrl: links.bistro });
 };
 export default Login;
