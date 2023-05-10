@@ -1,6 +1,6 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
-import { links } from "~/utils/links";
+import { LINKS } from "~/utils/links";
 
 const Login = () => {
   const router = useRouter();
@@ -10,6 +10,6 @@ const Login = () => {
 
   return query && query.returnUrl
     ? void signIn(undefined, { callbackUrl: router.query.returnUrl as string })
-    : void signIn(undefined, { callbackUrl: links.bistro });
+    : void signIn(undefined, { callbackUrl: LINKS.bistro });
 };
 export default Login;

@@ -6,7 +6,7 @@ const withBistroId = (bistroId: string) => {
   };
 };
 
-export const links = {
+export const LINKS = {
   base: "/",
   bistro: "/bistro",
   withBistroId,

@@ -19,7 +19,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex justify-center">
-        <div className="w-[90%] max-w-xl">
+        <div className="w-[90%] max-w-xl select-none">
           <Component {...pageProps} />
         </div>
       </main>

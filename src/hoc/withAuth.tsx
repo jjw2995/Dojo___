@@ -1,3 +1,5 @@
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, {
@@ -5,7 +7,7 @@ import React, {
   type PropsWithChildren,
   useEffect,
 } from "react";
-import { links } from "~/utils/links";
+import { LINKS } from "~/utils/links";
 
 function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
   // const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
@@ -15,8 +17,6 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
     const authorized = sessionStatus === "authenticated";
     const unAuthorized = sessionStatus === "unauthenticated";
     const loading = sessionStatus === "loading";
-    // console.log(router.query);
-    // console.log(router);
 
     useEffect(() => {
       // check if the session is loading or the router is not ready
@@ -41,10 +41,11 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
           <button
             className="font-bold"
             onClick={() => {
-              void signOut({ callbackUrl: links.base });
+              void signOut({ callbackUrl: LINKS.base });
             }}
           >
-            SignOut
+            <FontAwesomeIcon icon={faRightFromBracket} />
+            <span className="text-xs">logout</span>
           </button>
         </div>
         <Component {...props} />

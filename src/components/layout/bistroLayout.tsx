@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import React, { type PropsWithChildren, useEffect, useState } from "react";
 import WithAuth from "~/hoc/withAuth";
 import { type RouterOutputs, api } from "~/utils/api";
-import { links } from "~/utils/links";
+import { LINKS } from "~/utils/links";
 import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
@@ -39,7 +39,7 @@ const BistroLayout = <P extends PropsWithChildren>(
 
     if (isReady && isFetched && data) {
       if (!getBistroUser(data)) {
-        void router.push({ pathname: links.bistro });
+        void router.push({ pathname: LINKS.bistro });
       }
     }
 
