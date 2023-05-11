@@ -87,7 +87,7 @@ const CreatePostitionWizard = () => {
           <div className="w-1/4">
             <input
               type="text"
-              className="decoration-slate-400 placeholder:text-base placeholder-shown:underline focus:outline-0"
+              className="focus:ouline-0 decoration-slate-400 placeholder:text-base placeholder-shown:underline"
               placeholder="name"
               value={position.postionName}
               onChange={(e) => {
@@ -101,7 +101,7 @@ const CreatePostitionWizard = () => {
           </div>
           <input
             type="number"
-            className="w-1/5 underline decoration-slate-400 placeholder:text-base focus:no-underline focus:outline-0"
+            className="w-1/5"
             placeholder="$/hr"
             value={position.hourlyRate === 0 ? "" : position.hourlyRate}
             onChange={(e) => {
@@ -113,7 +113,7 @@ const CreatePostitionWizard = () => {
           />
           <input
             type="number"
-            className="w-1/5 underline decoration-slate-400 placeholder:text-base focus:no-underline focus:outline-0"
+            className="w-1/5"
             placeholder="tip ratio"
             value={
               position.positionTipPercent === 0

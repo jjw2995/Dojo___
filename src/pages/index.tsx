@@ -10,11 +10,6 @@ import { LINKS } from "~/utils/links";
 const Main = ({
   providers,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const router = useRouter();
-
-  console.log(providers);
-  // console.log(providers.values);
-
   return (
     <>
       <div className="flex h-screen flex-col items-center justify-center text-center">
@@ -23,42 +18,33 @@ const Main = ({
           <span>from a worker,</span>
           <span>for workers</span>
         </h3>
-        <FontAwesomeIcon icon={faHandsHolding} className="mb- max-w-sm" />
-        <div className="m-4 flex flex-col place-items-center text-center">
+        <div className="mb-10 flex w-screen flex-col place-items-center text-center">
+          <FontAwesomeIcon icon={faHandsHolding} className="mx-4 max-w-lg" />
           <div className="my-4 flex flex-col text-lg font-semibold text-slate-500">
             <span>Track restaurant operations,</span>
             <span>from tips to scheduling</span>
           </div>
         </div>
-        <span className="m-2 p-2 text-center font-semibold text-slate-700 ">
-          start
-        </span>
-        <button
-          onClick={() => {
-            // signIn("google");
-            void signIn(undefined, { callbackUrl: LINKS.bistro });
-          }}
-        ></button>
-        <div className="flex w-60 flex-col overflow-hidden rounded outline outline-4 outline-slate-500">
-          {Object.values(providers).map(
-            ({ callbackUrl, id, name, signinUrl }) => {
-              return (
-                <button
-                  key={id}
-                  className="flex items-center justify-center  font-medium text-slate-500 outline outline-slate-500 hover:bg-slate-300 hover:text-slate-700"
-                  onClick={() => signIn(id)}
-                >
-                  <img
-                    src={`https://authjs.dev/img/providers/${id}.svg`}
-                    alt=""
-                    className="m-1 w-8 p-1"
-                  />
-                  Sign in with {name}
-                </button>
-                // </div>
-              );
-            }
-          )}
+        <span className="text-center font-semibold text-slate-700 ">start</span>
+        <div className="flex min-w-fit flex-col rounded">
+          {/* <div className="flex w-60 flex-col overflow-hidden rounded outline outline-4 outline-slate-500"> */}
+          {Object.values(providers).map(({ id, name }) => {
+            return (
+              <button
+                key={id}
+                className="font-base m-1 flex select-none items-center justify-center rounded px-3 text-slate-500 outline outline-slate-500 hover:bg-slate-300 active:text-black"
+                onClick={() => signIn(id, { callbackUrl: LINKS.bistro })}
+              >
+                <img
+                  src={`https://authjs.dev/img/providers/${id}.svg`}
+                  alt=""
+                  className="m-1 w-7 p-1"
+                />
+                Sign in with {name}
+              </button>
+              // </div>
+            );
+          })}
         </div>
       </div>
     </>

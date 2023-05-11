@@ -16,12 +16,16 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <Head>
         <title>Dojo</title>
         <meta name="description" content="for servers, made by a server" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex justify-center">
-        <div className="w-[90%] max-w-xl select-none">
-          <Component {...pageProps} />
-        </div>
+      <main className="select-none">
+        {/* <div className="w-[90%] max-w-xl select-none"> */}
+        <Component {...pageProps} />
       </main>
     </SessionProvider>
   );

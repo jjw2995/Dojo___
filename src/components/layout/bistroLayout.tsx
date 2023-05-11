@@ -54,6 +54,5 @@ const BistroLayout = <P extends PropsWithChildren>(
   return Wrap;
 };
 
-// http://localhost:3000/bistro/clh35xx6l0001wm8sm1rjg3jz/home
 const Wrap = (c: React.ComponentType) => WithAuth(BistroLayout(c));
 export default Wrap;

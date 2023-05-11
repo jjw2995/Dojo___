@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { useState } from "react";
+// import Map from "~/components/map";
+import dynamic from "next/dynamic";
+
+const DMap = dynamic(() => import("~/components/map"), {
+  loading: () => <p>Loading...</p>,
+  ssr: false,
+});
 
 import withAuth from "~/hoc/withAuth";
 import { RouterOutputs, api } from "~/utils/api";
@@ -26,7 +33,6 @@ const CreateWizard = () => {
       <button onClick={() => createBistro({ name: input })}>
         create bistro
       </button>
-      <div></div>
     </>
   );
 };
@@ -51,29 +57,32 @@ const Bistro = () => {
   });
 
   return (
-    <div>
-      <h1 className="text-2xl">Bistro</h1>
-      <CreateWizard />
+    <div className="flex h-screen flex-col">
+      <div className=" ">
+        <h1 className="text-2xl">Bistro</h1>
+        <CreateWizard />
 
-      <div className="flex">
-        {data?.map((elem) => {
-          return (
-            <div key={elem.id} className="">
-              <Link href={`/bistro/${elem.id}/home`}>
-                <BistroItem bistro={elem} />
-              </Link>
-              <button
-                className="m-1 h-6 w-6 items-center justify-center outline"
-                onClick={() => {
-                  deleteBistro({ bistroId: elem.id });
-                }}
-              >
-                x
-              </button>
-            </div>
-          );
-        })}
+        <div className="flex">
+          {data?.map((elem) => {
+            return (
+              <div key={elem.id} className="">
+                <Link href={`/bistro/${elem.id}/home`}>
+                  <BistroItem bistro={elem} />
+                </Link>
+                <button
+                  className="m-1 h-6 w-6 items-center justify-center outline"
+                  onClick={() => {
+                    deleteBistro({ bistroId: elem.id });
+                  }}
+                >
+                  x
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
+      <DMap />
     </div>
   );
 };

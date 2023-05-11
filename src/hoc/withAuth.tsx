@@ -1,4 +1,8 @@
-import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBarsStaggered,
+  faHandsHolding,
+  faRightFromBracket,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -13,7 +17,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
   // const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
   const Wrapper = (props: P) => {
     const router = useRouter();
-    const { status: sessionStatus } = useSession();
+    const { status: sessionStatus, data } = useSession();
     const authorized = sessionStatus === "authenticated";
     const unAuthorized = sessionStatus === "unauthenticated";
     const loading = sessionStatus === "loading";
@@ -35,10 +39,25 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
     }
 
     return authorized ? (
-      <div>
-        <div className=" flex items-center justify-between bg-slate-200">
-          <div>Dojo Icon</div>
-          <button
+      <>
+        <div className=" flex h-12 items-center justify-between bg-gradient-to-b from-slate-100 p-2">
+          <FontAwesomeIcon icon={faBarsStaggered} className="basis-1/12" />
+
+          <FontAwesomeIcon
+            icon={faHandsHolding}
+            className="text-slate-600"
+            size={"xl"}
+          />
+          {data && data.user.image ? (
+            <img
+              loading="lazy"
+              src={data.user.image}
+              alt=""
+              className="w-4 basis-1/12 rounded-full "
+            />
+          ) : null}
+
+          {/* <button
             className="font-bold"
             onClick={() => {
               void signOut({ callbackUrl: LINKS.base });
@@ -46,10 +65,10 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
           >
             <FontAwesomeIcon icon={faRightFromBracket} />
             <span className="text-xs">logout</span>
-          </button>
+          </button> */}
         </div>
         <Component {...props} />
-      </div>
+      </>
     ) : (
       <>redirecting to login...</>
     );
