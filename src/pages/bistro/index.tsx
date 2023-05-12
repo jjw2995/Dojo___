@@ -57,7 +57,7 @@ const Bistro = () => {
   });
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex flex-col">
       <div className=" ">
         <h1 className="text-2xl">Bistro</h1>
         <CreateWizard />
