@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, useEffect, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
@@ -41,7 +41,14 @@ const icon = L.icon({
   iconAnchor: [12, 36],
 });
 
-const Bound = ({ results }: { results: PlaceType[] }) => {
+const Bound = ({
+  results,
+  isReset,
+}: {
+  results: PlaceType[];
+  isReset: boolean;
+}) => {
+  const [bounds, setBounds] = useState(null);
   const map = useMap();
   useEffect(() => {
     if (results.length > 0) {
@@ -61,7 +68,10 @@ const Bound = ({ results }: { results: PlaceType[] }) => {
       }, undefined);
 
       const [l1, u1, l2, u2] = bbox;
-      console.log();
+      setBounds([
+        [l1, l2],
+        [u1, u2],
+      ]);
 
       map.flyToBounds(
         [
@@ -72,7 +82,53 @@ const Bound = ({ results }: { results: PlaceType[] }) => {
       );
     }
   }, [results]);
+
+  useEffect(() => {
+    if (bounds && isReset)
+      map.flyToBounds(bounds, {
+        padding: [15, 15],
+        duration: 1.5,
+        maxZoom: 15,
+      });
+  }, [isReset]);
+
+  console.log(bounds);
+
   return null;
+};
+
+const PlaceButton = ({
+  place,
+  setSelected,
+  isEnabled,
+  resetSelected,
+}: {
+  place: PlaceType;
+  setSelected: () => void;
+  isEnabled: boolean;
+  resetSelected: () => void;
+}) => {
+  const { address } = place;
+
+  const { amenity } = address;
+
+  return (
+    <button
+      className={`m-1 w-[40%] rounded p-1 outline outline-slate-500 hover:bg-slate-500 ${
+        isEnabled ? "bg-slate-500" : ""
+      }`}
+      onClick={() => {
+        isEnabled ? resetSelected() : setSelected();
+      }}
+    >
+      <span className="flex font-semibold">{amenity}</span>
+      {/* {"type: " + JSON.stringify(type)} <br />
+              {"category: " + JSON.stringify(category)} <br />
+              {extratags.cuisine} */}
+      {/* {"extratags: " + JSON.stringify(extratags)} <br /> */}
+      {/* <button className="text-md outline"></button> */}
+    </button>
+  );
 };
 
 const PopupTriggerableMarker = ({
@@ -81,7 +137,7 @@ const PopupTriggerableMarker = ({
   place: PlaceType & { isPopupOpen: boolean };
 }) => {
   const markerRef = useRef<typeof Marker>(null);
-  // const { center, content, openPopup } = props;
+  const map = useMap();
 
   const {
     address,
@@ -97,7 +153,10 @@ const PopupTriggerableMarker = ({
   } = place;
 
   useEffect(() => {
-    if (isPopupOpen) markerRef.current.openPopup();
+    if (isPopupOpen) {
+      map.flyTo([lat, lon], 8, { duration: 1 });
+      // markerRef.current.openPopup();
+    }
   }, [isPopupOpen]);
 
   return (
@@ -117,13 +176,9 @@ const PopupTriggerableMarker = ({
   );
 };
 
-const Map = () => {
+const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
   const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState<PlaceType[]>([]);
-
-  const [selectedIndex, setSelectedIndex] = useState<number>();
-  console.log(selectedIndex);
 
   const searchHandler = () => {
     const params = {
@@ -156,31 +211,46 @@ const Map = () => {
   };
 
   return (
-    <div className="flex flex-col place-items-center">
-      <div className="m-2 flex items-center overflow-hidden rounded-sm text-center align-middle outline outline-slate-500">
-        <input
-          type="text"
-          placeholder="search bistro"
-          className="mx-1 w-32"
-          onChange={(e) => {
-            setSearch(e.target.value);
-          }}
-        />
-        <button
-          className="px-2 text-lg font-semibold outline outline-slate-500"
-          onClick={searchHandler}
-        >
-          search
-        </button>
-      </div>
+    <div className="m-2 flex items-center overflow-hidden rounded-sm text-center align-middle outline outline-slate-500">
+      <input
+        type="text"
+        placeholder="search bistro"
+        className="mx-1 w-32"
+        onChange={(e) => {
+          setSearch(e.target.value);
+        }}
+      />
+      <button
+        className="px-2 text-lg font-semibold outline outline-slate-500"
+        onClick={searchHandler}
+      >
+        search
+      </button>
+    </div>
+  );
+};
 
+const Map = () => {
+  const [results, setResults] = useState<PlaceType[]>([]);
+
+  const [selectedIndex, setSelectedIndex] = useState<number>();
+  console.log(selectedIndex);
+
+  const currySelect = (i: number) => {
+    return () => setSelectedIndex(i);
+  };
+  const resetSelect = () => {
+    setSelectedIndex(undefined);
+  };
+
+  return (
+    <div className="flex flex-col place-items-center">
+      <SearchComp setResults={setResults} />
       <MapContainer
         center={[45, -123]}
         zoom={3}
         worldCopyJump
-        scrollWheelZoom={true}
         className="aspect-[4/3] w-[90%] rounded-md md:max-w-xl"
-        zoomSnap={0.5}
         maxZoom={18}
         minZoom={3}
         maxBounds={[
@@ -192,36 +262,30 @@ const Map = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
         />
+
         {results.map((r: PlaceType, i) => {
-          console.log(r);
           return (
             <PopupTriggerableMarker
+              key={i}
               place={{ ...r, isPopupOpen: i === selectedIndex }}
             />
           );
         })}
-        <Bound results={results} />
+        <Bound results={results} isReset={selectedIndex === undefined} />
       </MapContainer>
+
       <div className="flex max-w-[90%] flex-wrap justify-center md:max-w-md ">
         {results.map((r, i) => {
-          const { address } = r;
-          const { amenity } = address;
-
           return (
-            <div
-              className="m-1 w-[40%] rounded p-1 outline outline-slate-500 hover:bg-slate-500"
+            <PlaceButton
               key={i}
-              onClick={() => {
-                setSelectedIndex(i);
+              place={{
+                ...r,
               }}
-            >
-              <span className="flex font-semibold">{amenity}</span>
-              {/* {"type: " + JSON.stringify(type)} <br />
-              {"category: " + JSON.stringify(category)} <br />
-              {extratags.cuisine} */}
-              {/* {"extratags: " + JSON.stringify(extratags)} <br /> */}
-              {/* <div className="text-md outline"></div> */}
-            </div>
+              setSelected={currySelect(i)}
+              isEnabled={selectedIndex === i}
+              resetSelected={() => setSelectedIndex(undefined)}
+            />
           );
         })}
       </div>
