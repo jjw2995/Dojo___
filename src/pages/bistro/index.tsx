@@ -10,6 +10,7 @@ const DMap = dynamic(() => import("~/components/map"), {
 
 import withAuth from "~/hoc/withAuth";
 import { RouterOutputs, api } from "~/utils/api";
+import { PlaceType } from "~/components/map";
 
 const CreateWizard = () => {
   const [input, setInput] = useState("");
@@ -48,6 +49,7 @@ const BistroItem = ({ bistro }: { bistro: bistro }) => {
 };
 const Bistro = () => {
   const { data } = api.bistro.getAllUserIsPartOf.useQuery();
+  const [place, setPlace] = useState<PlaceType | undefined>();
   const ctx = api.useContext();
 
   const { mutate: deleteBistro } = api.bistro.delete.useMutation({
@@ -55,6 +57,7 @@ const Bistro = () => {
       void ctx.bistro.getAllUserIsPartOf.invalidate();
     },
   });
+  console.log(place);
 
   return (
     <div className="flex flex-col">
@@ -82,9 +85,26 @@ const Bistro = () => {
           })}
         </div>
       </div>
-      <DMap />
+      <DMap setPlace={setPlace} />
     </div>
   );
 };
+
+//     OSM type && id defines a useful enough identifier
+//   {"osm_id: " + JSON.stringify(osm_id)} <br />
+//   {"osm_type: " + JSON.stringify(osm_type)} <br />
+//   {"place_id: " + JSON.stringify(r.place_id)} <br />
+
+//   {"display_name: " + JSON.stringify(display_name)} <br />
+//   address
+
+//   address,
+//   display_name,
+//   lat,
+//   lon,
+//   osm_id,
+//   osm_type,
+//   place_id,
+//   type,
 
 export default withAuth(Bistro);

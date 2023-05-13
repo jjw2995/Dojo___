@@ -3,8 +3,10 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { FitBoundsOptions } from "leaflet";
+import { LatLngBoundsLiteral } from "leaflet";
 
-type PlaceType = {
+export type PlaceType = {
   place_id: number;
   osm_id: number;
   osm_type: string;
@@ -15,6 +17,7 @@ type PlaceType = {
     indoor?: string;
     cuisine?: string;
     website?: string;
+    opening_hours?: string;
   };
   boundingbox: number[];
   lat: number;
@@ -22,8 +25,10 @@ type PlaceType = {
   display_name: string;
   address: {
     amenity: string;
+    house_number: string;
     road: string;
     suburb: string;
+    city: string;
     city_district: string;
     town: string;
     county: string;
@@ -48,8 +53,15 @@ const Bound = ({
   results: PlaceType[];
   isReset: boolean;
 }) => {
-  const [bounds, setBounds] = useState(null);
+  const [bounds, setBounds] = useState<LatLngBoundsLiteral>();
+
   const map = useMap();
+  const opts: FitBoundsOptions = {
+    padding: [5, 5],
+    duration: 1.5,
+    maxZoom: 12,
+  };
+
   useEffect(() => {
     if (results.length > 0) {
       let bbox = results.reduce((tot, cur) => {
@@ -68,31 +80,21 @@ const Bound = ({
       }, undefined);
 
       const [l1, u1, l2, u2] = bbox;
-      setBounds([
+      const xy1xy2: LatLngBoundsLiteral = [
         [l1, l2],
         [u1, u2],
-      ]);
-
-      map.flyToBounds(
-        [
-          [l1, l2],
-          [u1, u2],
-        ],
-        { padding: [15, 15], duration: 1.5, maxZoom: 15 }
-      );
+      ];
+      setBounds(xy1xy2);
+      map.flyToBounds(xy1xy2, opts);
     }
   }, [results]);
 
   useEffect(() => {
-    if (bounds && isReset)
-      map.flyToBounds(bounds, {
-        padding: [15, 15],
-        duration: 1.5,
-        maxZoom: 15,
-      });
+    if (bounds && isReset) {
+      map.flyToBounds(bounds, opts);
+      map.closePopup();
+    }
   }, [isReset]);
-
-  console.log(bounds);
 
   return null;
 };
@@ -108,25 +110,25 @@ const PlaceButton = ({
   isEnabled: boolean;
   resetSelected: () => void;
 }) => {
-  const { address } = place;
+  const { address, display_name } = place;
 
-  const { amenity } = address;
+  const { amenity, country, road, state, house_number, city, postcode } =
+    address;
+  // console.log(display_name.split(", ").slice(1).join(", "));
+  // console.log(address);
 
   return (
     <button
-      className={`m-1 w-[40%] rounded p-1 outline outline-slate-500 hover:bg-slate-500 ${
-        isEnabled ? "bg-slate-500" : ""
+      className={`m-1 w-64 rounded p-1 text-xs font-light outline outline-slate-500 ${
+        isEnabled ? "bg-slate-300" : ""
       }`}
       onClick={() => {
         isEnabled ? resetSelected() : setSelected();
       }}
     >
-      <span className="flex font-semibold">{amenity}</span>
-      {/* {"type: " + JSON.stringify(type)} <br />
-              {"category: " + JSON.stringify(category)} <br />
-              {extratags.cuisine} */}
-      {/* {"extratags: " + JSON.stringify(extratags)} <br /> */}
-      {/* <button className="text-md outline"></button> */}
+      <span className="text-sm font-bold text-slate-600">{amenity}</span>
+      <div>{[house_number, road, city, "\n"].filter((v) => v).join(", ")}</div>
+      <div>{[state, country, postcode].filter((v) => v).join(", ")}</div>
     </button>
   );
 };
@@ -139,22 +141,11 @@ const PopupTriggerableMarker = ({
   const markerRef = useRef<typeof Marker>(null);
   const map = useMap();
 
-  const {
-    address,
-    display_name,
-    lat,
-    lon,
-    osm_id,
-    osm_type,
-    place_id,
-    type,
-    extratags,
-    isPopupOpen,
-  } = place;
+  const { lat, lon, isPopupOpen, display_name } = place;
 
   useEffect(() => {
     if (isPopupOpen) {
-      map.flyTo([lat, lon], 8, { duration: 1 });
+      map.flyTo([lat, lon], 14, { duration: 1.5 });
       // markerRef.current.openPopup();
     }
   }, [isPopupOpen]);
@@ -162,15 +153,7 @@ const PopupTriggerableMarker = ({
   return (
     <Marker position={[Number(lat), Number(lon)]} icon={icon} ref={markerRef}>
       <Popup>
-        <button className="outline">asd</button>
-        <div className="text-md">
-          {"address.amenity: " + JSON.stringify(address?.amenity)} <br />
-          {"osm_id: " + JSON.stringify(osm_id)} <br />
-          {"osm_type: " + JSON.stringify(osm_type)} <br />
-          {"place_id: " + JSON.stringify(place_id)} <br />
-          {"type: " + JSON.stringify(type)} <br />
-          {"isPopupOpen: " + isPopupOpen} <br />
-        </div>
+        <div className="text-md">{display_name}</div>
       </Popup>
     </Marker>
   );
@@ -179,12 +162,13 @@ const PopupTriggerableMarker = ({
 const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
   const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
   const [search, setSearch] = useState("");
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   const searchHandler = () => {
     const params = {
       q: search,
       addressdetails: "1",
-      extratags: "1",
+      // extratags: "1",
       countrycodes: "ca",
       limit: "20",
       //   x1,y1, x2,y2
@@ -201,8 +185,6 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
     })
       .then((res) => res.text())
       .then((r) => {
-        // console.log(JSON.parse(r));
-
         setResults(JSON.parse(r));
       })
       .catch((e) => {
@@ -219,10 +201,18 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
         onChange={(e) => {
           setSearch(e.target.value);
         }}
+        onKeyDown={(e) => {
+          // e.key
+          if (e.key === "Enter") {
+            e.preventDefault;
+            btnRef.current?.click();
+          }
+        }}
       />
       <button
-        className="px-2 text-lg font-semibold outline outline-slate-500"
+        className="px-2 text-lg font-semibold outline outline-slate-500 active:bg-slate-400"
         onClick={searchHandler}
+        ref={btnRef}
       >
         search
       </button>
@@ -230,11 +220,9 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
   );
 };
 
-const Map = () => {
+const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
   const [results, setResults] = useState<PlaceType[]>([]);
-
   const [selectedIndex, setSelectedIndex] = useState<number>();
-  console.log(selectedIndex);
 
   const currySelect = (i: number) => {
     return () => setSelectedIndex(i);
@@ -243,38 +231,51 @@ const Map = () => {
     setSelectedIndex(undefined);
   };
 
+  useEffect(() => {
+    resetSelect();
+  }, [results]);
+
+  useEffect(() => {
+    if (selectedIndex) {
+      setPlace(results[selectedIndex]);
+    } else {
+      setPlace(undefined);
+    }
+  }, [selectedIndex]);
+
   return (
-    <div className="flex flex-col place-items-center">
+    <div className="flex flex-col place-items-center  ">
       <SearchComp setResults={setResults} />
-      <MapContainer
-        center={[45, -123]}
-        zoom={3}
-        worldCopyJump
-        className="aspect-[4/3] w-[90%] rounded-md md:max-w-xl"
-        maxZoom={18}
-        minZoom={3}
-        maxBounds={[
-          [-180, -360],
-          [180, 360],
-        ]}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
-        />
+      <div className="w-[90%] md:max-w-xl">
+        <MapContainer
+          center={[45, -123]}
+          zoom={3}
+          worldCopyJump
+          className="aspect-[4/3] rounded"
+          maxZoom={18}
+          minZoom={3}
+          maxBounds={[
+            [-180, -360],
+            [180, 360],
+          ]}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
+          />
 
-        {results.map((r: PlaceType, i) => {
-          return (
-            <PopupTriggerableMarker
-              key={i}
-              place={{ ...r, isPopupOpen: i === selectedIndex }}
-            />
-          );
-        })}
-        <Bound results={results} isReset={selectedIndex === undefined} />
-      </MapContainer>
-
-      <div className="flex max-w-[90%] flex-wrap justify-center md:max-w-md ">
+          {results.map((r: PlaceType, i) => {
+            return (
+              <PopupTriggerableMarker
+                key={i}
+                place={{ ...r, isPopupOpen: i === selectedIndex }}
+              />
+            );
+          })}
+          <Bound results={results} isReset={selectedIndex === undefined} />
+        </MapContainer>
+      </div>
+      <div className="flex max-w-xl flex-wrap justify-center ">
         {results.map((r, i) => {
           return (
             <PlaceButton
@@ -284,7 +285,7 @@ const Map = () => {
               }}
               setSelected={currySelect(i)}
               isEnabled={selectedIndex === i}
-              resetSelected={() => setSelectedIndex(undefined)}
+              resetSelected={resetSelect}
             />
           );
         })}
@@ -294,23 +295,6 @@ const Map = () => {
 };
 
 export default Map;
-
-//     OSM type && id defines a useful enough identifier
-//   {"osm_id: " + JSON.stringify(osm_id)} <br />
-//   {"osm_type: " + JSON.stringify(osm_type)} <br />
-//   {"place_id: " + JSON.stringify(r.place_id)} <br />
-
-//   {"display_name: " + JSON.stringify(display_name)} <br />
-//   address
-
-//   address,
-//   display_name,
-//   lat,
-//   lon,
-//   osm_id,
-//   osm_type,
-//   place_id,
-//   type,
 
 //  later for user location based nearby places
 //  <Marker position={[49.5, -122.5]} icon={icon}></Marker>
