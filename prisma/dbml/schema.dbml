@@ -4,14 +4,17 @@
 
 Table Bistro {
   id String [pk]
-  placeId String [unique, not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  name String [not null]
-  address String
+  name String [unique, not null]
   tipForms TipForm [not null]
   bistroUser BistroUser [not null]
   positions Position [not null]
+  osm_id Int [not null, default: -1]
+  osm_type String [not null, default: '']
+  osm_display_name String [not null, default: '']
+  osm_lat String [not null, default: '']
+  osm_lon String [not null, default: '']
 }
 
 Table TipForm {
@@ -42,9 +45,8 @@ Table BistroUser {
   updatedAt DateTime [not null]
   bistro Bistro [not null]
   user User [not null]
-  authority Authority [not null]
+  authority Authority [not null, default: 'USER']
   bistroUserPositions BistroUserPosition [not null]
-  TipContribution TipContribution [not null]
 
   indexes {
     (bistroId, userId) [unique]
@@ -87,8 +89,6 @@ Table TipContribution {
   hours Decimal [not null]
   bistroUserPosition BistroUserPosition [not null]
   bistroUserPositionId String [not null]
-  bistroUser BistroUser [not null]
-  bistroUserId String [not null]
 }
 
 Table User {
@@ -150,8 +150,6 @@ Ref: BistroUserPosition.positionId > Position.id
 Ref: Position.bistroId > Bistro.id
 
 Ref: TipContribution.bistroUserPositionId > BistroUserPosition.id
-
-Ref: TipContribution.bistroUserId > BistroUser.id
 
 Ref: Account.userId > User.id [delete: Cascade]
 

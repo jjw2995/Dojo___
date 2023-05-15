@@ -4,6 +4,7 @@ import {
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Menu } from "@headlessui/react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, {
@@ -48,24 +49,27 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
             className="text-slate-600"
             size={"xl"}
           />
-          {data && data.user.image ? (
-            <img
-              loading="lazy"
-              src={data.user.image}
-              alt=""
-              className="w-4 basis-1/12 rounded-full "
-            />
+          {/* {data.user.image ? (
+              <img
+                loading="lazy"
+                src={data.user.image}
+                alt=""
+                className="w-4 basis-1/12 rounded-full "
+              />
+            ) : (
+             
+            )} */}
+          {data ? (
+            <button
+              className="font-bold"
+              onClick={() => {
+                void signOut({ callbackUrl: LINKS.base });
+              }}
+            >
+              <FontAwesomeIcon icon={faRightFromBracket} />
+              <span className="text-xs">logout</span>
+            </button>
           ) : null}
-
-          {/* <button
-            className="font-bold"
-            onClick={() => {
-              void signOut({ callbackUrl: LINKS.base });
-            }}
-          >
-            <FontAwesomeIcon icon={faRightFromBracket} />
-            <span className="text-xs">logout</span>
-          </button> */}
         </div>
         <Component {...props} />
       </>

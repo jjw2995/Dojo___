@@ -23,6 +23,16 @@ _Moderator_
 - [ ] redirect
 - [ ] invite
 
+#### Bistro page
+
+- [x] OSM search
+- [x] integrate map
+  - [x] map marker
+  - [x] auto zoom on found places
+- [] make placeButtons more pleasing for places with longer info (hide initially, extend on click)
+
+??? make bistro unique on osm_id & osm_type?
+
 #### pages
 
 - [ ] Home

@@ -19,7 +19,7 @@ export type PlaceType = {
     website?: string;
     opening_hours?: string;
   };
-  boundingbox: number[];
+  boundingbox: [number, number, number, number];
   lat: number;
   lon: number;
   display_name: string;
@@ -64,25 +64,26 @@ const Bound = ({
 
   useEffect(() => {
     if (results.length > 0) {
-      let bbox = results.reduce((tot, cur) => {
-        if (!tot) {
-          return cur.boundingbox;
+      let bbox: [number, number, number, number] | undefined;
+      results.forEach((v) => {
+        if (!bbox) {
+          bbox = v.boundingbox;
+        } else {
+          const [v1, v2, v3, v4] = v.boundingbox;
+          const [b1, b2, b3, b4] = bbox;
+          bbox = [
+            Math.min(v1, b1),
+            Math.max(v2, b2),
+            Math.min(v3, b3),
+            Math.max(v4, b4),
+          ];
         }
-        const [t1, t2, t3, t4] = tot;
-        const [c1, c2, c3, c4] = cur.boundingbox;
+      });
 
-        return [
-          Math.min(t1, c1),
-          Math.max(t2, c2),
-          Math.min(t3, c3),
-          Math.max(t4, c4),
-        ];
-      }, undefined);
-
-      const [l1, u1, l2, u2] = bbox;
+      const [x1, x2, y1, y2] = bbox!;
       const xy1xy2: LatLngBoundsLiteral = [
-        [l1, l2],
-        [u1, u2],
+        [x1, y1],
+        [x2, y2],
       ];
       setBounds(xy1xy2);
       map.flyToBounds(xy1xy2, opts);
@@ -114,8 +115,6 @@ const PlaceButton = ({
 
   const { amenity, country, road, state, house_number, city, postcode } =
     address;
-  // console.log(display_name.split(", ").slice(1).join(", "));
-  // console.log(address);
 
   return (
     <button
@@ -126,10 +125,32 @@ const PlaceButton = ({
         isEnabled ? resetSelected() : setSelected();
       }}
     >
-      <span className="text-sm font-bold text-slate-600">{amenity}</span>
-      <div>{[house_number, road, city, "\n"].filter((v) => v).join(", ")}</div>
-      <div>{[state, country, postcode].filter((v) => v).join(", ")}</div>
+      <PlaceItem place={place} />
     </button>
+  );
+};
+
+export const PlaceItem = ({ place }: { place: PlaceType }) => {
+  const { address, display_name } = place;
+  const {
+    amenity,
+    country,
+    road,
+    state,
+    house_number,
+    city,
+    postcode,
+    county,
+  } = address;
+
+  return (
+    <>
+      <span className="text-sm font-bold text-slate-600">{amenity}</span>
+      <div>
+        {[house_number, road, county, city, "\n"].filter((v) => v).join(", ")}
+      </div>
+      <div>{[state, country, postcode].filter((v) => v).join(", ")}</div>
+    </>
   );
 };
 
@@ -138,7 +159,7 @@ const PopupTriggerableMarker = ({
 }: {
   place: PlaceType & { isPopupOpen: boolean };
 }) => {
-  const markerRef = useRef<typeof Marker>(null);
+  const markerRef = useRef(null);
   const map = useMap();
 
   const { lat, lon, isPopupOpen, display_name } = place;
@@ -168,7 +189,7 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
     const params = {
       q: search,
       addressdetails: "1",
-      // extratags: "1",
+      extratags: "1",
       countrycodes: "ca",
       limit: "20",
       //   x1,y1, x2,y2
@@ -185,6 +206,8 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
     })
       .then((res) => res.text())
       .then((r) => {
+        // console.log(JSON.parse(r));
+
         setResults(JSON.parse(r));
       })
       .catch((e) => {
@@ -196,7 +219,7 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
     <div className="m-2 flex items-center overflow-hidden rounded-sm text-center align-middle outline outline-slate-500">
       <input
         type="text"
-        placeholder="search bistro"
+        placeholder="search place"
         className="mx-1 w-32"
         onChange={(e) => {
           setSearch(e.target.value);
@@ -222,13 +245,13 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
 
 const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
   const [results, setResults] = useState<PlaceType[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState<number>();
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   const currySelect = (i: number) => {
     return () => setSelectedIndex(i);
   };
   const resetSelect = () => {
-    setSelectedIndex(undefined);
+    setSelectedIndex(-1);
   };
 
   useEffect(() => {
@@ -236,17 +259,26 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
   }, [results]);
 
   useEffect(() => {
-    if (selectedIndex) {
+    // console.log(selectedIndex);
+
+    if (selectedIndex >= 0) {
       setPlace(results[selectedIndex]);
     } else {
       setPlace(undefined);
+      resetSelect();
     }
   }, [selectedIndex]);
 
+  const respWidth = "w-[90%] lg:max-w-xl";
+
   return (
-    <div className="flex flex-col place-items-center  ">
+    <div className="flex flex-col place-items-center">
+      <ul>
+        <li>search specific name of places</li>
+        <li>replace hyphen "-" to space (ex. )</li>
+      </ul>
       <SearchComp setResults={setResults} />
-      <div className="w-[90%] md:max-w-xl">
+      <div className={respWidth}>
         <MapContainer
           center={[45, -123]}
           zoom={3}
@@ -275,7 +307,7 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
           <Bound results={results} isReset={selectedIndex === undefined} />
         </MapContainer>
       </div>
-      <div className="flex max-w-xl flex-wrap justify-center ">
+      <div className={`flex flex-wrap justify-center ${respWidth}`}>
         {results.map((r, i) => {
           return (
             <PlaceButton

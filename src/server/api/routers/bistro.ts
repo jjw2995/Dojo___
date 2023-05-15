@@ -4,24 +4,67 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const bistroRouter = createTRPCRouter({
-  getAllNotPartOf: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.bistro.findMany({
-      where: { bistroUser: { none: { userId: ctx.session.user.id } } },
-      include: {},
-    });
-  }),
+  searchByOSM: protectedProcedure
+    .input(
+      z.object({
+        osm_id: z.number().optional(),
+        osm_type: z.string().optional(),
+      })
+    )
+    .query(({ ctx, input: { osm_id, osm_type } }) => {
+      return ctx.prisma.bistro.findMany({
+        where: {
+          osm_id,
+          osm_type,
+          bistroUser: { none: { userId: ctx.session.user.id } },
+        },
+      });
+    }),
+  searchByName: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(3).max(150),
+      })
+    )
+    .query(({ ctx, input: { name } }) => {
+      const sear = name
+        .split(" ")
+        .filter((v) => v !== " ")
+        .map((v) => `*${v}*`)
+        .join(" ");
+      // console.log(sear);
+
+      return ctx.prisma.bistro.findMany({
+        where: {
+          name: {
+            search: sear,
+          },
+          bistroUser: { none: { userId: ctx.session.user.id } },
+        },
+      });
+    }),
+
   getAllUserIsPartOf: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.bistro.findMany({
       where: { bistroUser: { some: { userId: ctx.session.user.id } } },
     });
   }),
   create: protectedProcedure
-    .input(z.object({ name: z.string().min(3).max(50) }))
+    .input(
+      z.object({
+        name: z.string().min(3).max(50),
+        osm_id: z.number().optional(),
+        osm_type: z.string().optional(),
+        osm_display_name: z.string().optional(),
+        osm_lat: z.string().optional(),
+        osm_lon: z.string().optional(),
+      })
+    )
     .mutation(({ ctx, input }) => {
       return ctx.prisma.bistroUser.create({
         data: {
           user: { connect: { id: ctx.session.user.id } },
-          bistro: { create: { name: input.name, placeId: input.name } },
+          bistro: { create: { ...input } },
           authority: "MODERATOR",
         },
       });

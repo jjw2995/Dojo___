@@ -3,18 +3,28 @@
 
 model Bistro {
   id         String       @id @default(cuid())
-  placeId    String
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   name       String
-  address    String?
   tipForms   TipForm[]
   bistroUser BistroUser[]
   positions  Position[]
 
-  @@unique([placeId])
+  osm_id           Int    @default(-1)
+  osm_type         String @default("")
+  osm_display_name String @default("")
+  osm_lat          String @default("")
+  osm_lon          String @default("")
+
+  @@unique([name])
+  // @@unique([osm_id, osm_type])
+  @@index([osm_type, osm_id])
+  @@fulltext([name])
 }
 
+//     OSM type && id defines a useful enough identifier
+//   {"display_name: " + JSON.stringify(display_name)} <br />
+//   address
 enum Authority {
   MODERATOR
   USER
@@ -114,7 +124,8 @@ model User {
 // ====================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 generator dbml {
