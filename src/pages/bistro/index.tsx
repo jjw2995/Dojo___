@@ -13,16 +13,6 @@ import { LINKS } from "~/utils/links";
 import { PlaceType } from "~/components/placeItem";
 
 type bistro = RouterOutputs["bistro"]["getAllUserIsPartOf"][number];
-const BistroItem = ({ bistro }: { bistro: bistro }) => {
-  return (
-    <>
-      <div className="m-1 w-64 rounded p-1 text-xs font-light outline outline-slate-500">
-        <span className="text-sm font-bold text-slate-600">{bistro.name}</span>
-        {bistro.osm_display_name}
-      </div>
-    </>
-  );
-};
 
 const MemberedBistros = () => {
   const ctx = api.useContext();
@@ -34,11 +24,10 @@ const MemberedBistros = () => {
     },
   });
   return (
-    <div className="m-2 flex outline">
-      MemberedBistros
+    <div className="m-2 flex-col outline">
       {data?.map((elem) => {
         return (
-          <div key={elem.id} className="">
+          <div key={elem.id} className="m-2 p-2 outline">
             <Link href={LINKS.withBistroId(elem.id).home}>
               <BistroItem bistro={elem} />
             </Link>
@@ -123,34 +112,95 @@ const CreateWizard = ({ place }: { place: PlaceType | undefined }) => {
   );
 };
 
-const useRequestJoin = ({ bistroId }: { bistroId: string }) => {
-  // const {} = api.bistro.
-  return null;
-};
-
-const BistrosByName = () => {
-  const [searchName, setSearchName] = useState("");
-  const { data: bistros } = api.bistro.searchByName.useQuery(
-    { name: searchName },
-    { enabled: searchName !== "" && searchName.length > 2 }
-  );
+const JoinButton = ({ bistro }: { bistro: bistro | undefined }) => {
+  const ctx = api.useContext();
+  const { mutate: requestJoin } = api.bistro.requestJoin.useMutation({
+    onSuccess: () => {
+      ctx.bistro.getPendingBistros.invalidate();
+    },
+  });
 
   return (
-    <div className="m-2 rounded outline">
+    <button
+      onClick={() => {
+        console.log(bistro);
+
+        if (bistro) requestJoin({ bistroId: bistro.id });
+      }}
+      className={`m-2 rounded p-1 font-semibold text-slate-600 outline outline-slate-600 disabled:text-slate-300 disabled:outline-slate-300 `}
+      disabled={bistro === undefined}
+    >
+      request join
+    </button>
+  );
+};
+
+const BistrosLookUp = ({ place }: { place: PlaceType | undefined }) => {
+  const { data: bistrosByOSM } = api.bistro.searchByOSM.useQuery(
+    {
+      osm_id: place?.osm_id,
+      osm_type: place?.osm_type,
+    },
+    { enabled: place !== undefined }
+  );
+
+  const [searchName, setSearchName] = useState("");
+  const { data: bistrosByName } = api.bistro.searchByName.useQuery(
+    { name: searchName },
+    {
+      enabled: searchName !== "" && searchName.length > 2,
+    }
+  );
+
+  const [bistros, setBistros] = useState<bistro[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  useEffect(() => {
+    let ids = new Set();
+    let bList = new Array<bistro>();
+    bistrosByOSM?.forEach((v) => {
+      ids.add(v.id);
+      bList.push(v);
+    });
+    bistrosByName?.forEach((v) => {
+      if (!ids.has(v.id)) {
+        bList.push(v);
+      }
+    });
+
+    setBistros(bList);
+  }, [bistrosByOSM, bistrosByName]);
+
+  return (
+    <div className="m-2 p-2 outline">
+      BistrosLookUp
       <input
         placeholder="search name"
         value={searchName}
-        className="mx-1 w-32"
+        className="m-2 mx-1 w-32 outline outline-2"
         onChange={(e) => {
           e.preventDefault();
           setSearchName(e.target.value);
         }}
       />
-      <span className="font-semibold text-slate-600">BistrosByName</span>
-      <div>
-        {bistros?.map((bistro) => {
+      <div className="m-2 rounded outline">
+        <JoinButton
+          bistro={selectedIndex === -1 ? undefined : bistros[selectedIndex]}
+        />
+
+        {bistros?.map((bistro, i) => {
           return (
-            <div>
+            <div
+              key={bistro.id}
+              className={`${selectedIndex === i ? "bg-slate-300" : ""} outline`}
+              onClick={() => {
+                if (selectedIndex !== i) {
+                  setSelectedIndex(i);
+                } else {
+                  setSelectedIndex(-1);
+                }
+              }}
+            >
               <BistroItem bistro={bistro} />
             </div>
           );
@@ -159,23 +209,43 @@ const BistrosByName = () => {
     </div>
   );
 };
-
-const BistrosByPlace = ({ place }: { place: PlaceType }) => {
-  const { osm_id, osm_type } = place;
-  const { data: bistros } = api.bistro.searchByOSM.useQuery({
-    osm_id,
-    osm_type,
-  });
-
+const BistroItem = ({ bistro }: { bistro: bistro }) => {
   return (
-    <div className="m-2 rounded outline">
-      <span className="font-semibold text-slate-600">BistrosByPlace</span>
-      <div className="text-xs">{place.display_name}</div>
+    <>
+      {/* <div className="m-1 w-64 rounded p-1 text-xs font-light outline outline-slate-500"> */}
+      <div className="flex-col text-xs font-light">
+        <span className="text-sm font-bold text-slate-600">{bistro.name}</span>
+        {bistro.osm_display_name}
+      </div>
+    </>
+  );
+};
+const PendingBistros = () => {
+  const ctx = api.useContext();
+  const { data: pendingBistros } = api.bistro.getPendingBistros.useQuery();
+
+  const { mutate: cancelJoinRequest } =
+    api.bistro.cancelJoinRequest.useMutation({
+      onSuccess: () => {
+        ctx.bistro.getPendingBistros.invalidate();
+      },
+    });
+  return (
+    <div className="m-2">
+      PendingBistros
       <div>
-        {bistros?.map((bistro) => {
+        {pendingBistros?.map((bistro, i) => {
           return (
-            <div>
-              <BistroItem bistro={bistro} />
+            <div className="outline">
+              <button
+                onClick={() => {
+                  cancelJoinRequest({ bistroId: bistro.id });
+                  // remove pending
+                }}
+              >
+                x
+              </button>
+              <BistroItem key={i} bistro={bistro} />
             </div>
           );
         })}
@@ -191,55 +261,12 @@ const Bistro = () => {
       <div className="m-2 p-2 outline">
         <h1 className="text-2xl">My Bistros</h1>
         <MemberedBistros />
+        <PendingBistros />
       </div>
       <div className="m-2 p-2 outline">
         <h1 className="text-2xl">Search & Create</h1>
-
         <CreateWizard place={place} />
-        {/* {place && <BistrosByPlace place={place} />} */}
-        <BistrosByName />
-        <BistrosByPlace
-          place={{
-            place_id: 7043391,
-            licence:
-              "Data © OpenStreetMap contributors, ODbL 1.0. https://osm.org/copyright",
-            osm_type: "node",
-            osm_id: 889758799,
-            boundingbox: [
-              "49.2679878",
-              "49.2680878",
-              "-123.1569784",
-              "-123.1568784",
-            ],
-            lat: "49.2680378",
-            lon: "-123.1569284",
-            display_name:
-              "Hi Nippon, 2274, West 4th Avenue, Kitsilano, Vancouver, Metro Vancouver Regional District, British Columbia, V6K, Canada",
-            place_rank: 30,
-            category: "amenity",
-            type: "restaurant",
-            importance: 0.2001,
-            icon: "https://nominatim.openstreetmap.org/ui/mapicons/food_restaurant.p.20.png",
-            address: {
-              amenity: "Hi Nippon",
-              house_number: "2274",
-              road: "West 4th Avenue",
-              suburb: "Kitsilano",
-              city: "Vancouver",
-              county: "Metro Vancouver Regional District",
-              state: "British Columbia",
-              "ISO3166-2-lvl4": "CA-BC",
-              postcode: "V6K",
-              country: "Canada",
-              country_code: "ca",
-            },
-            extratags: {
-              cuisine: "japanese",
-              opening_hours:
-                "Mo-Th 11:30-21:30; Fr-Sa 11:30-22:00; Su 11:30-21:30",
-            },
-          }}
-        />
+        <BistrosLookUp place={place} />
       </div>
       <DMap setPlace={setPlace} />
     </div>

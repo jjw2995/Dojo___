@@ -10,11 +10,12 @@ model Bistro {
   bistroUser BistroUser[]
   positions  Position[]
 
-  osm_id           Int    @default(-1)
-  osm_type         String @default("")
-  osm_display_name String @default("")
-  osm_lat          String @default("")
-  osm_lon          String @default("")
+  osm_id           Int           @default(-1)
+  osm_type         String        @default("")
+  osm_display_name String        @default("")
+  osm_lat          String        @default("")
+  osm_lon          String        @default("")
+  PendingJoin      PendingJoin[]
 
   @@unique([name])
   // @@unique([osm_id, osm_type])
@@ -22,9 +23,19 @@ model Bistro {
   @@fulltext([name])
 }
 
-//     OSM type && id defines a useful enough identifier
-//   {"display_name: " + JSON.stringify(display_name)} <br />
-//   address
+model PendingJoin {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  bistro    Bistro   @relation(fields: [bistroId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bistroId String
+  userId   String
+
+  @@unique([bistroId, userId])
+}
+
 enum Authority {
   MODERATOR
   USER
@@ -109,14 +120,15 @@ model TipContribution {
 }
 
 model User {
-  id            String       @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?      @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
   bistroUser    BistroUser[]
+  PendingJoin   PendingJoin[]
 }
 
 // ====================================================

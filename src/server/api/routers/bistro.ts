@@ -1,7 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedBistroMemberProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 
 export const bistroRouter = createTRPCRouter({
   searchByOSM: protectedProcedure
@@ -29,10 +33,11 @@ export const bistroRouter = createTRPCRouter({
     .query(({ ctx, input: { name } }) => {
       const sear = name
         .split(" ")
-        .filter((v) => v !== " ")
+        .filter((v) => v !== "")
         .map((v) => `*${v}*`)
         .join(" ");
       // console.log(sear);
+      // console.log(name.split(" "));
 
       return ctx.prisma.bistro.findMany({
         where: {
@@ -43,7 +48,40 @@ export const bistroRouter = createTRPCRouter({
         },
       });
     }),
+  getPendingBistros: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.bistro.findMany({
+      where: { PendingJoin: { some: { userId: ctx.session.user.id } } },
+    });
+  }),
+  getPendingUsers: protectedBistroMemberProcedure({ isModerator: true }).query(
+    ({ ctx }) => {
+      const { bistroId } = ctx;
+      return ctx.prisma.user.findMany({
+        where: { PendingJoin: { some: { bistroId } } },
+      });
+    }
+  ),
+  requestJoin: protectedProcedure
+    .input(z.object({ bistroId: z.string().cuid() }))
+    .mutation(({ ctx, input }) => {
+      console.log({ bistroId: input.bistroId, userId: ctx.session.user.id });
 
+      return ctx.prisma.pendingJoin.create({
+        data: { bistroId: input.bistroId, userId: ctx.session.user.id },
+      });
+    }),
+  cancelJoinRequest: protectedProcedure
+    .input(z.object({ bistroId: z.string().cuid() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.pendingJoin.delete({
+        where: {
+          bistroId_userId: {
+            bistroId: input.bistroId,
+            userId: ctx.session.user.id,
+          },
+        },
+      });
+    }),
   getAllUserIsPartOf: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.bistro.findMany({
       where: { bistroUser: { some: { userId: ctx.session.user.id } } },

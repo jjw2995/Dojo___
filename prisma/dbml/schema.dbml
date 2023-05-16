@@ -15,6 +15,20 @@ Table Bistro {
   osm_display_name String [not null, default: '']
   osm_lat String [not null, default: '']
   osm_lon String [not null, default: '']
+  PendingJoin PendingJoin [not null]
+}
+
+Table PendingJoin {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  bistro Bistro [not null]
+  user User [not null]
+  bistroId String [not null]
+  userId String [not null]
+
+  indexes {
+    (bistroId, userId) [unique]
+  }
 }
 
 Table TipForm {
@@ -100,6 +114,7 @@ Table User {
   accounts Account [not null]
   sessions Session [not null]
   bistroUser BistroUser [not null]
+  PendingJoin PendingJoin [not null]
 }
 
 Table Account {
@@ -134,6 +149,10 @@ Enum Authority {
   MODERATOR
   USER
 }
+
+Ref: PendingJoin.bistroId > Bistro.id [delete: Cascade]
+
+Ref: PendingJoin.userId > User.id [delete: Cascade]
 
 Ref: TipForm.bistroId > Bistro.id
 
