@@ -3,6 +3,7 @@ const withBistroId = (bistroId: string) => {
     home: `/bistro/${bistroId}/home`,
     pay: `/bistro/${bistroId}/pay`,
     menu: `/bistro/${bistroId}/menu`,
+    invite: `/bistro/${bistroId}/invite`,
   };
 };
 

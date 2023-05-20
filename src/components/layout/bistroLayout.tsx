@@ -7,6 +7,7 @@ import { Nav } from "../nav";
 
 type dataType = RouterOutputs["bistroUser"]["getAll"][number];
 
+// used for urls /bistro/[bistroId]/*
 const BistroLayout = <P extends PropsWithChildren>(
   Component: React.ComponentType<P>
 ) => {
@@ -19,34 +20,19 @@ const BistroLayout = <P extends PropsWithChildren>(
    */
   const Wrap = (props: P) => {
     const router = useRouter();
-    const { isReady, query } = router;
+    const { isReady } = router;
 
-    const { data, isFetched } = api.bistroUser.getAll.useQuery();
-    // api.bistro.getAllUserIsPartOf
+    const { data: bUser } = api.bistroUser.getSelf.useQuery(undefined, {
+      retry: false,
+      onError: () => {
+        router.push({ pathname: LINKS.bistro });
+      },
+    });
 
-    const [bistro, setBistro] = useState<dataType>();
-
-    useEffect(() => {
-      if (data) {
-        setBistro(data.find((e) => e.bistroId === query.bistroId));
-      }
-    }, [data, query]);
-
-    const getBistroUser = (data: dataType[]) => {
-      const temp = data.find((e) => e.bistroId === query.bistroId);
-      return temp;
-    };
-
-    if (isReady && isFetched && data) {
-      if (!getBistroUser(data)) {
-        void router.push({ pathname: LINKS.bistro });
-      }
-    }
-
-    return isReady && bistro ? (
+    return isReady && bUser ? (
       <>
-        <Nav bistro={bistro} />
-        <Component {...{ ...props }} />
+        <Nav bistroId={bUser.bistroId} />
+        <Component {...props} />
       </>
     ) : null;
   };

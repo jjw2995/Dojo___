@@ -6,19 +6,34 @@ import {
 } from "../trpc";
 
 export const bistroUserRouter = createTRPCRouter({
-  // getAll
-  getAll: protectedProcedure.query(({ ctx }) => {
+  getSelf: protectedBistroMemberProcedure().query(({ ctx }) => {
+    return ctx.session;
+  }),
+  isMod: protectedBistroMemberProcedure().query(({ ctx, input }) => {
+    return ctx.session.authority === "MODERATOR";
+  }),
+  getAll: protectedBistroMemberProcedure().query(({ ctx }) => {
     return ctx.prisma.bistroUser.findMany({
-      where: { userId: ctx.session.user.id },
-      include: { bistro: true },
+      where: { bistroId: ctx.session.bistroId },
+      include: { user: {} },
     });
   }),
+
+  delete: protectedBistroMemberProcedure({ isModerator: true })
+    .input(z.object({ bistroUserId: z.string().cuid() }))
+    .mutation(({ ctx, input }) => {
+      // TODO: change to flagged, 1 month cron delete
+      return ctx.session.bistroUserId === input.bistroUserId
+        ? null
+        : ctx.prisma.bistroUser.delete({ where: { id: input.bistroUserId } });
+    }),
+
   getAllNotAssignedToPosition: protectedBistroMemberProcedure()
     .input(z.object({ positionId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       const res = await ctx.prisma.bistroUser.findMany({
         where: {
-          bistroId: ctx.bistroId,
+          bistroId: ctx.session.bistroId,
           bistroUserPositions: { none: { positionId: input.positionId } },
         },
         include: { user: { select: { name: true } } },
@@ -32,7 +47,7 @@ export const bistroUserRouter = createTRPCRouter({
     }),
   getAllWithPositions: protectedBistroMemberProcedure().query(({ ctx }) => {
     return ctx.prisma.bistroUser.findMany({
-      where: { bistroId: ctx.bistroId },
+      where: { bistroId: ctx.session.bistroId },
       include: { bistroUserPositions: {} },
     });
   }),

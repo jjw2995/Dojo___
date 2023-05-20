@@ -236,7 +236,7 @@ const PendingBistros = () => {
       <div>
         {pendingBistros?.map((bistro, i) => {
           return (
-            <div className="outline">
+            <div className="outline" key={i}>
               <button
                 onClick={() => {
                   cancelJoinRequest({ bistroId: bistro.id });
@@ -245,7 +245,7 @@ const PendingBistros = () => {
               >
                 x
               </button>
-              <BistroItem key={i} bistro={bistro} />
+              <BistroItem bistro={bistro} />
             </div>
           );
         })}

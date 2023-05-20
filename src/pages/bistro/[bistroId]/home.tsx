@@ -7,8 +7,9 @@ import { RouterInputs, RouterOutputs, api } from "~/utils/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimesCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
-import { Authority } from "@prisma/client";
 import { Popover } from "@headlessui/react";
+import { useRouter } from "next/router";
+import { LINKS } from "~/utils/links";
 
 const Home: NextPage = (p) => {
   /**
@@ -17,12 +18,15 @@ const Home: NextPage = (p) => {
    * - group people by position
    * - with tip% hourRate
    */
+  const { data: selfData } = api.bistroUser.getSelf.useQuery();
+
   return (
     <>
+      <InviteLink bistroId={selfData?.bistroId} />
       <div>
         <span className="text-lg font-bold">Users</span>
         <div className="rounded p-1 outline">
-          <PendingMembers />
+          {selfData?.authority === "MODERATOR" && <PendingMembers />}
           <Members />
         </div>
       </div>
@@ -30,34 +34,96 @@ const Home: NextPage = (p) => {
       <div>
         <span className="text-lg font-bold">Positions</span>
         <div className="rounded p-1 outline">
-          <CreatePostitionWizard />
-          <Positions />
+          {/* <CreatePostitionWizard />
+          <Positions /> */}
         </div>
       </div>
     </>
   );
 };
 
-const Members = () => {
+const InviteLink = ({ bistroId }: { bistroId: string | undefined }) => {
   return (
-    <div className="font text-base">
-      Members
-      <div>invitation link button</div>
+    <>
       <button
         onClick={(e) => {
           e.preventDefault();
+          navigator.clipboard.writeText(
+            `${window ? window.location.origin : ""}${
+              LINKS.withBistroId(bistroId).invite
+            }`
+          );
           alert("invite link has been copied");
         }}
-        className="font-semibold text-slate-500"
+        className="m-2 rounded p-1 font-semibold text-slate-500 outline active:bg-slate-200"
       >
         copy invite link
       </button>
-    </div>
+    </>
   );
 };
 
 const PendingMembers = () => {
-  return <div>PendingMembers</div>;
+  const ctx = api.useContext();
+  const { data: pendingUsers } = api.bistro.getPendingUsers.useQuery();
+  const { mutate } = api.bistro.acceptPendingUser.useMutation({
+    onSuccess: () => {
+      ctx.bistroUser.getAll.invalidate();
+      ctx.bistro.getPendingUsers.invalidate();
+    },
+  });
+
+  return (
+    <div>
+      PendingMembers
+      <div>
+        {pendingUsers?.map((v, i) => {
+          return (
+            <div
+              className="outline hover:bg-slate-200"
+              onClick={() => {
+                mutate({ userId: v.id });
+              }}
+              key={i}
+            >
+              {v.name}, {v.email}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const Members = () => {
+  const ctx = api.useContext();
+  const { data: bistroUsers } = api.bistroUser.getAll.useQuery();
+  const { mutate: bUserDelete } = api.bistroUser.delete.useMutation({
+    onSuccess: () => {
+      ctx.bistroUser.getAll.invalidate();
+    },
+  });
+
+  return (
+    <div className="font flex text-base">
+      Members
+      {bistroUsers &&
+        bistroUsers.map((v, i) => {
+          return (
+            <div key={i} className="m-1 flex rounded p-1 outline">
+              <BistroUser bistroUser={v} />
+              <button
+                onClick={() => {
+                  bUserDelete({ bistroUserId: v.id });
+                }}
+              >
+                x
+              </button>
+            </div>
+          );
+        })}
+    </div>
+  );
 };
 
 /**
@@ -251,9 +317,6 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
   );
 };
 
-type BistroUser =
-  positionWithAssingedBistroUsers[number]["bistroUsers"][number];
-
 const AssignUserPopover = ({ positionId }: { positionId: string }) => {
   const ctx = api.useContext();
   const { data: unassignedBistroUsers } =
@@ -311,18 +374,21 @@ const AssignUserPopover = ({ positionId }: { positionId: string }) => {
   ) : null;
 };
 
+type BistroUser = RouterOutputs["bistroUser"]["getAll"][number];
 const BistroUser = ({
   bistroUser,
 }: {
-  bistroUser: {
-    name: string | null;
-    authority: Authority;
-    tipPercent?: number;
-    id: string;
-    image?: string | null;
-  };
+  bistroUser: BistroUser;
+  // bistroUser: {
+  //   name: string | null;
+  //   authority: Authority;
+  //   tipPercent?: number;
+  //   id: string;
+  //   image?: string | null;
+  // };
 }) => {
-  const { authority, id, image, name, tipPercent } = bistroUser;
+  const { authority, id, user } = bistroUser;
+  const { name } = user;
   /**
    * show
    * - Authority
@@ -338,9 +404,7 @@ const BistroUser = ({
         {fname}
       </span>
       <div className="text-xs">
-        <div>
-          {tipPercent}%, {authority === "MODERATOR" ? "modr" : "user"}
-        </div>
+        <div>{authority === "MODERATOR" ? "modr" : "user"}</div>
       </div>
     </div>
   );

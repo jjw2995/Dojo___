@@ -61,6 +61,26 @@ export const bistroRouter = createTRPCRouter({
       });
     }
   ),
+  acceptPendingUser: protectedBistroMemberProcedure({ isModerator: true })
+    .input(z.object({ userId: z.string().cuid() }))
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma
+        .$transaction([
+          ctx.prisma.bistroUser.create({
+            data: { bistroId: ctx.bistroId!, userId: input.userId },
+          }),
+          ctx.prisma.pendingJoin.delete({
+            where: {
+              bistroId_userId: {
+                bistroId: ctx.bistroId!,
+                userId: input.userId,
+              },
+            },
+          }),
+        ])
+        .then((r) => r[0]);
+    }),
+
   requestJoin: protectedProcedure
     .input(z.object({ bistroId: z.string().cuid() }))
     .mutation(({ ctx, input }) => {
