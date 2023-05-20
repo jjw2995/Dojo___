@@ -208,7 +208,7 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
       .then((r) => {
         // console.log(JSON.parse(r));
 
-        setResults(JSON.parse(r));
+        setResults(JSON.parse(r) as PlaceType[]);
       })
       .catch((e) => {
         console.log(e);
@@ -227,7 +227,7 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
         onKeyDown={(e) => {
           // e.key
           if (e.key === "Enter") {
-            e.preventDefault;
+            void e.preventDefault;
             btnRef.current?.click();
           }
         }}
@@ -275,7 +275,7 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
     <div className="flex flex-col place-items-center">
       <ul>
         <li>search specific name of places</li>
-        <li>replace hyphen "-" to space (ex. )</li>
+        <li>replace hyphen &quot;-&quot; to space (ex. )</li>
       </ul>
       <SearchComp setResults={setResults} />
       <div className={respWidth}>

@@ -8,8 +8,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimesCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 import { Popover } from "@headlessui/react";
-import { useRouter } from "next/router";
 import { LINKS } from "~/utils/links";
+
+const useSelf = () => {
+  const { data: selfData } = api.bistroUser.getSelf.useQuery();
+  return {};
+};
 
 const Home: NextPage = (p) => {
   /**
@@ -24,6 +28,7 @@ const Home: NextPage = (p) => {
     <>
       <InviteLink bistroId={selfData?.bistroId} />
       <div>
+        <div>{selfData?.authority}</div>
         <span className="text-lg font-bold">Users</span>
         <div className="rounded p-1 outline">
           {selfData?.authority === "MODERATOR" && <PendingMembers />}
@@ -34,8 +39,8 @@ const Home: NextPage = (p) => {
       <div>
         <span className="text-lg font-bold">Positions</span>
         <div className="rounded p-1 outline">
-          {/* <CreatePostitionWizard />
-          <Positions /> */}
+          <CreatePostitionWizard />
+          <Positions />
         </div>
       </div>
     </>
@@ -48,9 +53,9 @@ const InviteLink = ({ bistroId }: { bistroId: string | undefined }) => {
       <button
         onClick={(e) => {
           e.preventDefault();
-          navigator.clipboard.writeText(
+          void navigator.clipboard.writeText(
             `${window ? window.location.origin : ""}${
-              LINKS.withBistroId(bistroId).invite
+              LINKS.withBistroId(bistroId!).invite
             }`
           );
           alert("invite link has been copied");
@@ -68,8 +73,8 @@ const PendingMembers = () => {
   const { data: pendingUsers } = api.bistro.getPendingUsers.useQuery();
   const { mutate } = api.bistro.acceptPendingUser.useMutation({
     onSuccess: () => {
-      ctx.bistroUser.getAll.invalidate();
-      ctx.bistro.getPendingUsers.invalidate();
+      void ctx.bistroUser.getAll.invalidate();
+      void ctx.bistro.getPendingUsers.invalidate();
     },
   });
 
@@ -100,7 +105,7 @@ const Members = () => {
   const { data: bistroUsers } = api.bistroUser.getAll.useQuery();
   const { mutate: bUserDelete } = api.bistroUser.delete.useMutation({
     onSuccess: () => {
-      ctx.bistroUser.getAll.invalidate();
+      void ctx.bistroUser.getAll.invalidate();
     },
   });
 
@@ -140,7 +145,7 @@ const CreatePostitionWizard = () => {
   const ctx = api.useContext();
   const { mutate } = api.position.create.useMutation({
     onSuccess: ({}) => {
-      void ctx.position.getAllWithAssignedMembers.invalidate();
+      void ctx.position.getAllWithBistroUsers.invalidate();
       setPosition(initState);
     },
   });
@@ -219,17 +224,21 @@ const CreatePostitionWizard = () => {
 };
 
 type positionWithAssingedBistroUsers =
-  RouterOutputs["position"]["getAllWithAssignedMembers"];
+  RouterOutputs["position"]["getAllWithBistroUsers"];
 const Positions = () => {
   const ctx = api.useContext();
 
   const { data: positionsWithAssignedMembers } =
-    api.position.getAllWithAssignedMembers.useQuery();
+    api.position.getAllWithBistroUsers.useQuery();
 
   return (
     <>
-      {positionsWithAssignedMembers?.map((position) => {
-        return <Position position={position} />;
+      {positionsWithAssignedMembers?.map((position, i) => {
+        return (
+          <div key={i}>
+            <Position position={position} />
+          </div>
+        );
       })}
     </>
   );
@@ -242,7 +251,7 @@ const Position = ({ position }: { position: PositionType }) => {
 
   const { mutate: deletePosition } = api.position.delete.useMutation({
     onSuccess: ({}) => {
-      void ctx.position.getAllWithAssignedMembers.invalidate();
+      void ctx.position.getAllWithBistroUsers.invalidate();
     },
   });
 
@@ -256,8 +265,8 @@ const Position = ({ position }: { position: PositionType }) => {
               <div>
                 <span className="text-xl font-bold">{position.name}</span>
                 <span className="right-2 ml-1 text-xs font-light">
-                  ${position.hourlyRate}/hr, {position.positionTipPercent}%
-                  totalTip
+                  ${Number(position.hourlyRate)}/hr,{" "}
+                  {position.positionTipPercent}% totalTip
                 </span>
               </div>
             </div>
@@ -283,14 +292,14 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
   const { mutate: unassignPosition } =
     api.bistroUser.unassignPosition.useMutation({
       onSuccess: ({}) => {
-        void ctx.position.getAllWithAssignedMembers.invalidate();
+        void ctx.position.getAllWithBistroUsers.invalidate();
       },
     });
 
   return (
     <div className="flex overflow-x-auto">
       {[
-        ...position.bistroUsers,
+        ...position.bistroUserPositions,
         // ...position.bistroUsers,
         // ...position.bistroUsers,
       ].map((v, idx) => {
@@ -303,13 +312,13 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
               className="absolute -left-1 -top-2 h-4 w-3 bg-white font-medium"
               onClick={() => {
                 unassignPosition({
-                  bistroUserPositionId: v.bistroUserPositionId,
+                  bistroUserPositionId: v.id,
                 });
               }}
             >
               <FontAwesomeIcon icon={faTimesCircle} />
             </button>
-            <BistroUser bistroUser={v} />
+            <BistroUser bistroUser={v.bistroUser} />
           </div>
         );
       })}
@@ -334,7 +343,7 @@ const AssignUserPopover = ({ positionId }: { positionId: string }) => {
       void ctx.bistroUser.getAllNotAssignedToPosition.invalidate({
         positionId,
       });
-      void ctx.position.getAllWithAssignedMembers.invalidate();
+      void ctx.position.getAllWithBistroUsers.invalidate();
     },
   });
 
@@ -361,7 +370,7 @@ const AssignUserPopover = ({ positionId }: { positionId: string }) => {
                         });
                       }}
                     >
-                      <BistroUser bistroUser={{ ...bistroUser }} />
+                      <BistroUser bistroUser={bistroUser} />
                     </button>
                   </div>
                 );

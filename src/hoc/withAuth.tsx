@@ -30,7 +30,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
       // if the user is not authorized, redirect to the login page
       // with a return url to the current page
       if (unAuthorized) {
-        signIn(undefined, { callbackUrl: router.asPath });
+        void signIn(undefined, { callbackUrl: router.asPath });
       }
     }, [loading, unAuthorized, sessionStatus, router]);
 

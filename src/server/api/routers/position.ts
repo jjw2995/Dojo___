@@ -1,13 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedBistroMemberProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { Prisma } from "@prisma/client";
-
-type getAllWithAssignedMembersType = Prisma.PositionGetPayload<{
-  include: {
-    bistroUserPositions: { include: { bistroUser: { include: { user: {} } } } };
-  };
-}>[];
 
 export const positionRouter = createTRPCRouter({
   create: protectedBistroMemberProcedure({ isModerator: true })
@@ -57,9 +50,9 @@ export const positionRouter = createTRPCRouter({
         });
       }
     }),
-  getAllWithAssignedMembers: protectedBistroMemberProcedure().query(
+  getAllWithBistroUsers: protectedBistroMemberProcedure().query(
     async ({ ctx: { prisma, session } }) => {
-      const res = await prisma.position.findMany({
+      return prisma.position.findMany({
         where: { bistroId: session.bistroId },
         include: {
           bistroUserPositions: {
@@ -69,47 +62,6 @@ export const positionRouter = createTRPCRouter({
           },
         },
       });
-
-      /**
-       *  (Position & {bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})[]})[]
-       *  bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})[]
-       *  bistroUserPositions: (BistroUserPosition & {bistroUser: BistroUser & {user: User}})
-       */
-      //
-      const myPositionsObj = res.map((position) => {
-        const {
-          bistroUserPositions,
-          bistroId,
-          positionTipPercent,
-          hourlyRate,
-          ...rest
-        } = position;
-        return {
-          ...rest,
-          positionTipPercent,
-          hourlyRate: hourlyRate.toNumber(),
-          bistroUsers: bistroUserPositions.map((b) => {
-            const { bistroUser, tipPercent, id: bistroUserPositionId } = b;
-            const {
-              authority,
-              user: { name, image },
-              id,
-            } = bistroUser;
-            return {
-              name,
-              authority,
-              tipPercent: tipPercent,
-              id,
-              image,
-              bistroUserPositionId,
-            };
-          }),
-        };
-      });
-
-      // myPositionObj[0]?.bistroUser[0].
-
-      return myPositionsObj;
     }
   ),
   getUnassignedBistroUsers: protectedBistroMemberProcedure()

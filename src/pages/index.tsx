@@ -33,7 +33,7 @@ const Main = ({
               <button
                 key={id}
                 className="font-base m-1 flex select-none items-center justify-center rounded px-3 text-slate-500 outline outline-slate-500 hover:bg-slate-300 active:text-black"
-                onClick={() => signIn(id, { callbackUrl: LINKS.bistro })}
+                onClick={() => void signIn(id, { callbackUrl: LINKS.bistro })}
               >
                 <img
                   src={`https://authjs.dev/img/providers/${id}.svg`}

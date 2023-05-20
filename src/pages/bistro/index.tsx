@@ -116,7 +116,7 @@ const JoinButton = ({ bistro }: { bistro: bistro | undefined }) => {
   const ctx = api.useContext();
   const { mutate: requestJoin } = api.bistro.requestJoin.useMutation({
     onSuccess: () => {
-      ctx.bistro.getPendingBistros.invalidate();
+      void ctx.bistro.getPendingBistros.invalidate();
     },
   });
 
@@ -156,8 +156,8 @@ const BistrosLookUp = ({ place }: { place: PlaceType | undefined }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   useEffect(() => {
-    let ids = new Set();
-    let bList = new Array<bistro>();
+    const ids = new Set();
+    const bList = new Array<bistro>();
     bistrosByOSM?.forEach((v) => {
       ids.add(v.id);
       bList.push(v);
@@ -227,7 +227,7 @@ const PendingBistros = () => {
   const { mutate: cancelJoinRequest } =
     api.bistro.cancelJoinRequest.useMutation({
       onSuccess: () => {
-        ctx.bistro.getPendingBistros.invalidate();
+        void ctx.bistro.getPendingBistros.invalidate();
       },
     });
   return (

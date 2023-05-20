@@ -60,7 +60,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // ADD-ON: if bistro/[bistroId]/*, attach bistroId for processing later
   const urlTokens = req.headers.referer?.split("/");
-  let index = urlTokens?.findIndex((elem) => elem === "bistro");
+  const index = urlTokens?.findIndex((elem) => elem === "bistro");
   let bistroId;
   if (index && urlTokens && urlTokens.length > index) {
     bistroId = urlTokens[index + 1];

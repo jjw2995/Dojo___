@@ -11,10 +11,10 @@ const Invite = () => {
   api.bistroUser.getSelf.useQuery(undefined, {
     onError: () => {
       mutate({ bistroId });
-      router.push(LINKS.bistro);
+      void router.push(LINKS.bistro);
     },
     onSuccess: () => {
-      router.push(LINKS.withBistroId(bistroId).home);
+      void router.push(LINKS.withBistroId(bistroId).home);
     },
     retry: false,
   });

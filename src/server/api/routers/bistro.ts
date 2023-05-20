@@ -67,12 +67,12 @@ export const bistroRouter = createTRPCRouter({
       return ctx.prisma
         .$transaction([
           ctx.prisma.bistroUser.create({
-            data: { bistroId: ctx.bistroId!, userId: input.userId },
+            data: { bistroId: ctx.session.bistroId, userId: input.userId },
           }),
           ctx.prisma.pendingJoin.delete({
             where: {
               bistroId_userId: {
-                bistroId: ctx.bistroId!,
+                bistroId: ctx.session.bistroId,
                 userId: input.userId,
               },
             },
