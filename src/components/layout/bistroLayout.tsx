@@ -1,9 +1,13 @@
 import { useRouter } from "next/router";
-import React, { type PropsWithChildren } from "react";
+import React, { createContext, type PropsWithChildren } from "react";
 import WithAuth from "~/hoc/withAuth";
 import { type RouterOutputs, api } from "~/utils/api";
 import { LINKS } from "~/utils/links";
 import { Nav } from "../nav";
+
+type bUserType = RouterOutputs["bistroUser"]["getSelf"] & { isMod: boolean };
+
+export const CurBistroUserContext = createContext<bUserType>({} as bUserType);
 
 // used for urls /bistro/[bistroId]/*
 const BistroLayout = <P extends PropsWithChildren>(
@@ -21,10 +25,12 @@ const BistroLayout = <P extends PropsWithChildren>(
     });
 
     return isReady && bUser ? (
-      <>
+      <CurBistroUserContext.Provider
+        value={{ ...bUser, isMod: bUser.authority === "MODERATOR" }}
+      >
         <Nav bistroId={bUser.bistroId} />
         <Component {...props} />
-      </>
+      </CurBistroUserContext.Provider>
     ) : null;
   };
 

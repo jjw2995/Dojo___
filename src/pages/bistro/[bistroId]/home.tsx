@@ -1,7 +1,8 @@
 import { NextPage } from "next";
-import React from "react";
-import { useState } from "react";
-import BistroLayout from "~/components/layout/bistroLayout";
+import React, { useContext, useState } from "react";
+import BistroLayout, {
+  CurBistroUserContext,
+} from "~/components/layout/bistroLayout";
 import { RouterInputs, RouterOutputs, api } from "~/utils/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,11 +10,7 @@ import { faTimesCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 import { Popover } from "@headlessui/react";
 import { LINKS } from "~/utils/links";
-
-const useSelf = () => {
-  const { data: selfData } = api.bistroUser.getSelf.useQuery();
-  return {};
-};
+import { ModButton } from "~/components/modButton";
 
 const Home: NextPage = (p) => {
   /**
@@ -22,24 +19,25 @@ const Home: NextPage = (p) => {
    * - group people by position
    * - with tip% hourRate
    */
-  const { data: selfData } = api.bistroUser.getSelf.useQuery();
+  // const { selfData } = useSelf();
+
+  const curBUser = useContext(CurBistroUserContext);
 
   return (
     <>
-      <InviteLink bistroId={selfData?.bistroId} />
+      {curBUser.isMod && <InviteLink bistroId={curBUser.bistroId} />}
       <div>
-        <div>{selfData?.authority}</div>
+        <div>{curBUser.authority}</div>
         <span className="text-lg font-bold">Users</span>
         <div className="rounded p-1 outline">
-          {selfData?.authority === "MODERATOR" && <PendingMembers />}
+          {curBUser.isMod && <PendingMembers />}
           <Members />
         </div>
       </div>
-
       <div>
         <span className="text-lg font-bold">Positions</span>
         <div className="rounded p-1 outline">
-          <CreatePostitionWizard />
+          {curBUser.isMod && <CreatePostitionWizard />}
           <Positions />
         </div>
       </div>
@@ -84,7 +82,7 @@ const PendingMembers = () => {
       <div>
         {pendingUsers?.map((v, i) => {
           return (
-            <div
+            <ModButton
               className="outline hover:bg-slate-200"
               onClick={() => {
                 mutate({ userId: v.id });
@@ -92,7 +90,7 @@ const PendingMembers = () => {
               key={i}
             >
               {v.name}, {v.email}
-            </div>
+            </ModButton>
           );
         })}
       </div>
@@ -117,13 +115,13 @@ const Members = () => {
           return (
             <div key={i} className="m-1 flex rounded p-1 outline">
               <BistroUser bistroUser={v} />
-              <button
+              <ModButton
                 onClick={() => {
                   bUserDelete({ bistroUserId: v.id });
                 }}
               >
                 x
-              </button>
+              </ModButton>
             </div>
           );
         })}
@@ -255,13 +253,15 @@ const Position = ({ position }: { position: PositionType }) => {
     },
   });
 
+  const curBUser = useContext(CurBistroUserContext);
+
   return (
     <div key={position.id} className=" m-1 overflow-hidden rounded p-1 outline">
       <div className="m-1 flex justify-between">
         <div className="flex place-content-between content-between justify-between">
           <div className="flex-col">
             <div className="flex ">
-              <AssignUserPopover positionId={position.id} />
+              {curBUser.isMod && <PopoverAssignUser positionId={position.id} />}
               <div>
                 <span className="text-xl font-bold">{position.name}</span>
                 <span className="right-2 ml-1 text-xs font-light">
@@ -272,14 +272,14 @@ const Position = ({ position }: { position: PositionType }) => {
             </div>
           </div>
         </div>
-        <button
+        <ModButton
           className="content-center justify-center font-medium"
           onClick={() => {
             deletePosition({ positionId: position.id });
           }}
         >
           x
-        </button>
+        </ModButton>
       </div>
       <AssignedUsers position={position} />
     </div>
@@ -308,7 +308,7 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
             key={idx}
             className="relative m-1 mt-2 rounded shadow-lg outline"
           >
-            <button
+            <ModButton
               className="absolute -left-1 -top-2 h-4 w-3 bg-white font-medium"
               onClick={() => {
                 unassignPosition({
@@ -317,7 +317,7 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
               }}
             >
               <FontAwesomeIcon icon={faTimesCircle} />
-            </button>
+            </ModButton>
             <BistroUser bistroUser={v.bistroUser} />
           </div>
         );
@@ -326,7 +326,7 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
   );
 };
 
-const AssignUserPopover = ({ positionId }: { positionId: string }) => {
+const PopoverAssignUser = ({ positionId }: { positionId: string }) => {
   const ctx = api.useContext();
   const { data: unassignedBistroUsers } =
     api.bistroUser.getAllNotAssignedToPosition.useQuery({

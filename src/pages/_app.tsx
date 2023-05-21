@@ -20,11 +20,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
-
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="select-none">
-        {/* <div className="w-[90%] max-w-xl select-none"> */}
         <Component {...pageProps} />
       </main>
     </SessionProvider>
