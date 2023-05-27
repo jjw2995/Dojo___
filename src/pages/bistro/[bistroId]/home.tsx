@@ -6,7 +6,11 @@ import BistroLayout, {
 import { RouterInputs, RouterOutputs, api } from "~/utils/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimesCircle, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTimesCircle,
+  faUserPlus,
+  faPlusCircle,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Popover } from "@headlessui/react";
 import { LINKS } from "~/utils/links";
@@ -19,25 +23,37 @@ const Home: NextPage = (p) => {
    * - group people by position
    * - with tip% hourRate
    */
-  // const { selfData } = useSelf();
 
   const curBUser = useContext(CurBistroUserContext);
 
   return (
     <>
       {curBUser.isMod && <InviteLink bistroId={curBUser.bistroId} />}
-      <div>
-        <div>{curBUser.authority}</div>
-        <span className="text-lg font-bold">Users</span>
-        <div className="rounded p-1 outline">
+      <div className="m-2 space-y-3 ">
+        <div>
+          <span className="text-lg font-bold">Members</span>
+
           {curBUser.isMod && <PendingMembers />}
           <Members />
         </div>
-      </div>
-      <div>
-        <span className="text-lg font-bold">Positions</span>
-        <div className="rounded p-1 outline">
-          {curBUser.isMod && <CreatePostitionWizard />}
+        <div>
+          <Popover className="relative">
+            <div className="flex text-lg font-bold ">
+              Positions
+              {curBUser.isMod && (
+                <>
+                  <Popover.Button>
+                    <FontAwesomeIcon icon={faPlusCircle} />
+                  </Popover.Button>
+                </>
+              )}
+            </div>
+            <div>
+              <Popover.Panel className="absolute z-10 rounded bg-white outline">
+                <CreatePostitionWizard />
+              </Popover.Panel>
+            </div>
+          </Popover>
           <Positions />
         </div>
       </div>
@@ -66,6 +82,7 @@ const InviteLink = ({ bistroId }: { bistroId: string | undefined }) => {
   );
 };
 
+type PendingUser = RouterOutputs["bistro"]["getPendingUsers"][number];
 const PendingMembers = () => {
   const ctx = api.useContext();
   const { data: pendingUsers } = api.bistro.getPendingUsers.useQuery();
@@ -77,24 +94,31 @@ const PendingMembers = () => {
   });
 
   return (
-    <div>
-      PendingMembers
-      <div>
-        {pendingUsers?.map((v, i) => {
-          return (
-            <ModButton
-              className="outline hover:bg-slate-200"
-              onClick={() => {
-                mutate({ userId: v.id });
-              }}
-              key={i}
-            >
-              {v.name}, {v.email}
-            </ModButton>
-          );
-        })}
-      </div>
-    </div>
+    pendingUsers &&
+    pendingUsers.length > 0 && (
+      <>
+        PendingMembers
+        <SideScrollDiv>
+          {pendingUsers.map((v, i) => {
+            return (
+              <ModButton
+                // className="outline hover:bg-slate-200"
+                className="m-1 rounded shadow-lg outline"
+                onClick={() => {
+                  mutate({ userId: v.id });
+                }}
+                key={i}
+              >
+                <div className=" m-1 flex min-w-fit flex-col items-center">
+                  <div className="font-bold">{v.name}</div>
+                  <div className="text-xs text-slate-400">{v.email}</div>
+                </div>
+              </ModButton>
+            );
+          })}
+        </SideScrollDiv>
+      </>
+    )
   );
 };
 
@@ -108,30 +132,31 @@ const Members = () => {
   });
 
   return (
-    <div className="font flex text-base">
-      Members
-      {bistroUsers &&
-        bistroUsers.map((v, i) => {
-          return (
-            <div key={i} className="m-1 flex rounded p-1 outline">
-              <BistroUser bistroUser={v} />
-              <ModButton
-                onClick={() => {
-                  bUserDelete({ bistroUserId: v.id });
-                }}
-              >
-                x
-              </ModButton>
-            </div>
-          );
-        })}
+    <div className="font  text-base">
+      {bistroUsers && (
+        <SideScrollDiv>
+          {[...bistroUsers, ...bistroUsers, ...bistroUsers].map((v, i) => {
+            return (
+              <div key={i} className="m-1 flex rounded outline">
+                <BistroUser bistroUser={v} />
+                <ModButton
+                  onClick={() => {
+                    bUserDelete({ bistroUserId: v.id });
+                  }}
+                >
+                  x
+                </ModButton>
+              </div>
+            );
+          })}
+        </SideScrollDiv>
+      )}
     </div>
   );
 };
 
 /**
  */
-type a = RouterInputs["position"]["create"];
 const CreatePostitionWizard = () => {
   const initState = {
     postionName: "",
@@ -233,9 +258,9 @@ const Positions = () => {
     <>
       {positionsWithAssignedMembers?.map((position, i) => {
         return (
-          <div key={i}>
-            <Position position={position} />
-          </div>
+          // <div key={i}>
+          <Position key={i} position={position} />
+          // </div>
         );
       })}
     </>
@@ -245,6 +270,7 @@ const Positions = () => {
 type PositionType = positionWithAssingedBistroUsers[number];
 
 const Position = ({ position }: { position: PositionType }) => {
+  // const [];
   const ctx = api.useContext();
 
   const { mutate: deletePosition } = api.position.delete.useMutation({
@@ -254,39 +280,111 @@ const Position = ({ position }: { position: PositionType }) => {
   });
 
   const curBUser = useContext(CurBistroUserContext);
+  // add update position
+
+  const [updateValue, setUpdateValue] = useState(position);
+
+  const updateRate = (num: number) => {
+    setUpdateValue((r) => {
+      return { ...r, hourlyRate: num };
+    });
+  };
+  const updateTipPerc = (num: number) => {
+    setUpdateValue((r) => {
+      return { ...r, positionTipPercent: num };
+    });
+  };
 
   return (
-    <div key={position.id} className=" m-1 overflow-hidden rounded p-1 outline">
+    <div className="rounded border-2 shadow">
       <div className="m-1 flex justify-between">
-        <div className="flex place-content-between content-between justify-between">
-          <div className="flex-col">
-            <div className="flex ">
-              {curBUser.isMod && <PopoverAssignUser positionId={position.id} />}
-              <div>
-                <span className="text-xl font-bold">{position.name}</span>
-                <span className="right-2 ml-1 text-xs font-light">
-                  ${Number(position.hourlyRate)}/hr,{" "}
-                  {position.positionTipPercent}% totalTip
-                </span>
-              </div>
-            </div>
+        {/* <div className="flex place-content-between content-between justify-between"> */}
+        {curBUser.isMod && <PopoverAssignUser positionId={updateValue.id} />}
+        <div className="flex w-full justify-around text-sm">
+          <div className=" font-bold">{updateValue.name}</div>
+
+          <div className="flex">
+            $
+            <OnClickShowInput
+              update={updateRate}
+              init={Number(updateValue.hourlyRate)}
+            >
+              {Number(updateValue.hourlyRate)}
+            </OnClickShowInput>
+            /hr
+          </div>
+          <div className="flex">
+            <OnClickShowInput
+              update={updateTipPerc}
+              init={Number(updateValue.positionTipPercent)}
+            >
+              {Number(updateValue.positionTipPercent)}
+            </OnClickShowInput>
+            % of total tip
           </div>
         </div>
         <ModButton
           className="content-center justify-center font-medium"
           onClick={() => {
-            deletePosition({ positionId: position.id });
+            deletePosition({ positionId: updateValue.id });
           }}
         >
           x
         </ModButton>
       </div>
-      <AssignedUsers position={position} />
+      <AssignedUsers bistroUserPositions={updateValue.bistroUserPositions} />
     </div>
   );
 };
 
-const AssignedUsers = ({ position }: { position: PositionType }) => {
+const OnClickShowInput = ({
+  children,
+  update,
+  init,
+}: {
+  children: any;
+  update: (num: number) => void;
+  init: number;
+}) => {
+  const [showInput, setShowInput] = useState(false);
+  const [val, setVal] = useState(init);
+
+  return (
+    <div
+      onClick={() => {
+        setShowInput(true);
+      }}
+      onBlur={() => {
+        setShowInput(false);
+        update(val);
+      }}
+    >
+      {!showInput ? (
+        children
+      ) : (
+        <input
+          className="w-8 max-w-fit"
+          type="number"
+          autoFocus
+          value={val}
+          onChange={(e) => {
+            setVal(Number(e.target.value));
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const SideScrollDiv = (props) => {
+  return <div className=" flex overflow-x-scroll">{props.children}</div>;
+};
+
+const AssignedUsers = ({
+  bistroUserPositions: bistroUserPositions,
+}: {
+  bistroUserPositions: PositionType["bistroUserPositions"];
+}) => {
   const ctx = api.useContext();
 
   const { mutate: unassignPosition } =
@@ -297,16 +395,15 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
     });
 
   return (
-    <div className="flex overflow-x-auto">
+    <SideScrollDiv>
       {[
-        ...position.bistroUserPositions,
-        // ...position.bistroUsers,
-        // ...position.bistroUsers,
+        ...bistroUserPositions,
+        // ...bistroUserPositions,
       ].map((v, idx) => {
         return (
           <div
             key={idx}
-            className="relative m-1 mt-2 rounded shadow-lg outline"
+            className="relative m-1 rounded shadow shadow-slate-300 outline outline-1 "
           >
             <ModButton
               className="absolute -left-1 -top-2 h-4 w-3 bg-white font-medium"
@@ -322,7 +419,7 @@ const AssignedUsers = ({ position }: { position: PositionType }) => {
           </div>
         );
       })}
-    </div>
+    </SideScrollDiv>
   );
 };
 
@@ -348,7 +445,7 @@ const PopoverAssignUser = ({ positionId }: { positionId: string }) => {
   });
 
   return unassignedBistroUsers ? (
-    <Popover>
+    <Popover className="relative">
       {({}) => (
         <>
           <Popover.Button
@@ -357,9 +454,15 @@ const PopoverAssignUser = ({ positionId }: { positionId: string }) => {
           >
             <FontAwesomeIcon icon={faUserPlus} size={"xs"} />
           </Popover.Button>
-          <Popover.Panel className="absolute left-1/4 z-10 max-w-[100%] -translate-x-1/4 flex-col rounded bg-slate-200">
-            <div className="flex overflow-x-scroll pb-1">
-              {[...unassignedBistroUsers].map((bistroUser, idx) => {
+          {/* <Popover.Panel className="absolute left-1/4 z-10 max-w-[100%] -translate-x-1/4 flex-col rounded bg-slate-200"> */}
+          <Popover.Panel className="absolute left-0 w-72 bg-slate-200">
+            <SideScrollDiv>
+              {[
+                ...unassignedBistroUsers,
+                // ...unassignedBistroUsers,
+                // ...unassignedBistroUsers,
+                // ...unassignedBistroUsers,
+              ].map((bistroUser, idx) => {
                 return (
                   <div key={idx} className="m-1 rounded shadow-lg outline">
                     <button
@@ -375,7 +478,7 @@ const PopoverAssignUser = ({ positionId }: { positionId: string }) => {
                   </div>
                 );
               })}
-            </div>
+            </SideScrollDiv>
           </Popover.Panel>
         </>
       )}
@@ -387,18 +490,13 @@ type BistroUser = RouterOutputs["bistroUser"]["getAll"][number];
 const BistroUser = ({
   bistroUser,
 }: {
-  bistroUser: BistroUser;
-  // bistroUser: {
-  //   name: string | null;
-  //   authority: Authority;
-  //   tipPercent?: number;
-  //   id: string;
-  //   image?: string | null;
-  // };
+  bistroUser: BistroUser & { tipPercent?: number };
 }) => {
   const { authority, id, user } = bistroUser;
   const { name } = user;
+
   /**
+   *
    * show
    * - Authority
    * - name
@@ -413,7 +511,10 @@ const BistroUser = ({
         {fname}
       </span>
       <div className="text-xs">
-        <div>{authority === "MODERATOR" ? "modr" : "user"}</div>
+        <div>
+          {authority === "MODERATOR" ? "modr" : "user"}
+          {bistroUser.tipPercent}
+        </div>
       </div>
     </div>
   );

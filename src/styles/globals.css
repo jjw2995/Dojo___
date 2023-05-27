@@ -6,18 +6,14 @@
   html {
     -webkit-tap-highlight-color: transparent;
   }
-  /* className="decoration-slate-400 placeholder:text-base placeholder-shown:underline focus:outline-0" */
   input {
     outline: 0.125rem;
     outline-style: solid;
     outline-width: 0px;
-    text-decoration-line: underline;
     text-decoration-color: #94a3b8;
-    text-decoration-line: underline;
   }
   :focus {
-    text-decoration-line: none;
-    /* outline-width: 0px; */
+    text-decoration-line: underline;
   }
 
   ::placeholder {
@@ -98,6 +94,17 @@
 @layer utilities {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  @variants responsive {
+    /* Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
   }
 }
 
