@@ -93,33 +93,30 @@ const PendingMembers = () => {
     },
   });
 
-  return (
-    pendingUsers &&
-    pendingUsers.length > 0 && (
-      <>
-        PendingMembers
-        <SideScrollDiv>
-          {pendingUsers.map((v, i) => {
-            return (
-              <ModButton
-                // className="outline hover:bg-slate-200"
-                className="m-1 rounded shadow-lg outline"
-                onClick={() => {
-                  mutate({ userId: v.id });
-                }}
-                key={i}
-              >
-                <div className=" m-1 flex min-w-fit flex-col items-center">
-                  <div className="font-bold">{v.name}</div>
-                  <div className="text-xs text-slate-400">{v.email}</div>
-                </div>
-              </ModButton>
-            );
-          })}
-        </SideScrollDiv>
-      </>
-    )
-  );
+  return pendingUsers && pendingUsers.length > 0 ? (
+    <>
+      PendingMembers
+      <SideScrollDiv>
+        {pendingUsers.map((v, i) => {
+          return (
+            <ModButton
+              // className="outline hover:bg-slate-200"
+              className="m-1 rounded shadow-lg outline"
+              onClick={() => {
+                mutate({ userId: v.id });
+              }}
+              key={i}
+            >
+              <div className=" m-1 flex min-w-fit flex-col items-center">
+                <div className="font-bold">{v.name}</div>
+                <div className="text-xs text-slate-400">{v.email}</div>
+              </div>
+            </ModButton>
+          );
+        })}
+      </SideScrollDiv>
+    </>
+  ) : null;
 };
 
 const Members = () => {
@@ -285,6 +282,7 @@ const Position = ({ position }: { position: PositionType }) => {
   const [updateValue, setUpdateValue] = useState(position);
 
   const updateRate = (num: number) => {
+    // !!!
     setUpdateValue((r) => {
       return { ...r, hourlyRate: num };
     });
