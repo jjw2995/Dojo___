@@ -10,7 +10,7 @@ model Bistro {
   bistroUser BistroUser[]
   positions  Position[]
 
-  osm_id           Int           @default(-1)
+  osm_id           Int           @db.UnsignedInt
   osm_type         String        @default("")
   osm_display_name String        @default("")
   osm_lat          String        @default("")
@@ -18,7 +18,6 @@ model Bistro {
   PendingJoin      PendingJoin[]
 
   @@unique([name])
-  // @@unique([osm_id, osm_type])
   @@index([osm_type, osm_id])
   @@fulltext([name])
 }

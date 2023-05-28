@@ -1,5 +1,5 @@
 import { NextPage } from "next";
-import React, { useContext, useState } from "react";
+import React, { FC, PropsWithChildren, useContext, useState } from "react";
 import BistroLayout, {
   CurBistroUserContext,
 } from "~/components/layout/bistroLayout";
@@ -376,7 +376,7 @@ const OnClickShowInput = ({
   );
 };
 
-const SideScrollDiv = (props) => {
+const SideScrollDiv: FC<PropsWithChildren> = (props) => {
   return <div className=" flex overflow-x-scroll">{props.children}</div>;
 };
 

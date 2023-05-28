@@ -10,7 +10,7 @@ Table Bistro {
   tipForms TipForm [not null]
   bistroUser BistroUser [not null]
   positions Position [not null]
-  osm_id Int [not null, default: -1]
+  osm_id Int [not null]
   osm_type String [not null, default: '']
   osm_display_name String [not null, default: '']
   osm_lat String [not null, default: '']

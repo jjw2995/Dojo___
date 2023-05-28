@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { getServerSession } from "next-auth";
 import { getProviders, signIn } from "next-auth/react";
-import { useRouter } from "next/router";
 import { authOptions } from "~/server/auth";
 import { LINKS } from "~/utils/links";
 
