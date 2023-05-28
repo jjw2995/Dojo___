@@ -15,6 +15,7 @@ import {
 import { Popover } from "@headlessui/react";
 import { LINKS } from "~/utils/links";
 import { ModButton } from "~/components/modButton";
+import { Decimal } from "@prisma/client/runtime";
 
 const Home: NextPage = (p) => {
   /**
@@ -281,10 +282,23 @@ const Position = ({ position }: { position: PositionType }) => {
 
   const [updateValue, setUpdateValue] = useState(position);
 
-  const updateRate = (num: number) => {
-    // !!!
+  const updateRate = (num: Decimal) => {
     setUpdateValue((r) => {
-      return { ...r, hourlyRate: num };
+      // r.bistroUserPositions[1]?.bistroUser.
+      return {
+        ...r,
+        bistroUserPositions: {
+          ...r.bistroUserPositions.map((r) => {
+            const a = { ...r, bistroUser: { ...r.bistroUser } };
+            a;
+            return {
+              ...r,
+              bistroUser: { ...r.bistroUser, user: { ...r.bistroUser.user } },
+            };
+          }),
+        },
+        hourlyRate: num,
+      };
     });
   };
   const updateTipPerc = (num: number) => {
