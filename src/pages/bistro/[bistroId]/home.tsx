@@ -15,7 +15,6 @@ import {
 import { Popover } from "@headlessui/react";
 import { LINKS } from "~/utils/links";
 import { ModButton } from "~/components/modButton";
-import { Decimal } from "@prisma/client/runtime";
 
 const Home: NextPage = (p) => {
   /**
@@ -158,7 +157,7 @@ const Members = () => {
 const CreatePostitionWizard = () => {
   const initState = {
     postionName: "",
-    hourlyRate: 0,
+    hourlyRateInCents: 0,
     positionTipPercent: 0,
   };
   const [position, setPosition] = useState(initState);
@@ -195,11 +194,16 @@ const CreatePostitionWizard = () => {
             type="number"
             className="w-1/5"
             placeholder="$/hr"
-            value={position.hourlyRate === 0 ? "" : position.hourlyRate}
+            value={
+              position.hourlyRateInCents === 0 ? "" : position.hourlyRateInCents
+            }
             onChange={(e) => {
               e.preventDefault();
               setPosition((prev) => {
-                return { ...prev, hourlyRate: parseFloat(e.target.value) };
+                return {
+                  ...prev,
+                  hourlyRateInCents: Number(e.target.value),
+                };
               });
             }}
           />
@@ -225,10 +229,10 @@ const CreatePostitionWizard = () => {
           <div className="items-center justify-center rounded font-medium outline">
             <button
               onClick={() => {
-                const { hourlyRate, positionTipPercent, postionName } =
+                const { hourlyRateInCents, positionTipPercent, postionName } =
                   position;
                 mutate({
-                  hourlyRate,
+                  hourlyRateInCents,
                   positionTipPercent,
                   postionName,
                 });
@@ -270,6 +274,7 @@ type PositionType = positionWithAssingedBistroUsers[number];
 const Position = ({ position }: { position: PositionType }) => {
   // const [];
   const ctx = api.useContext();
+  // position.
 
   const { mutate: deletePosition } = api.position.delete.useMutation({
     onSuccess: ({}) => {
@@ -282,23 +287,9 @@ const Position = ({ position }: { position: PositionType }) => {
 
   const [updateValue, setUpdateValue] = useState(position);
 
-  const updateRate = (num: Decimal) => {
+  const updateRate = (num: number) => {
     setUpdateValue((r) => {
-      // r.bistroUserPositions[1]?.bistroUser.
-      return {
-        ...r,
-        bistroUserPositions: {
-          ...r.bistroUserPositions.map((r) => {
-            const a = { ...r, bistroUser: { ...r.bistroUser } };
-            a;
-            return {
-              ...r,
-              bistroUser: { ...r.bistroUser, user: { ...r.bistroUser.user } },
-            };
-          }),
-        },
-        hourlyRate: num,
-      };
+      return { ...r, hourlyRateInCents: num };
     });
   };
   const updateTipPerc = (num: number) => {
@@ -306,6 +297,8 @@ const Position = ({ position }: { position: PositionType }) => {
       return { ...r, positionTipPercent: num };
     });
   };
+
+  // console.log(updatedValue);
 
   return (
     <div className="rounded border-2 shadow">
@@ -319,9 +312,9 @@ const Position = ({ position }: { position: PositionType }) => {
             $
             <OnClickShowInput
               update={updateRate}
-              init={Number(updateValue.hourlyRate)}
+              init={Number(updateValue.hourlyRateInCents)}
             >
-              {Number(updateValue.hourlyRate)}
+              {Number(updateValue.hourlyRateInCents)}
             </OnClickShowInput>
             /hr
           </div>

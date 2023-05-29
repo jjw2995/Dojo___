@@ -86,7 +86,7 @@ Table Position {
   bistroId String [not null]
   name String [not null]
   positionTipPercent Int [not null, default: 0]
-  hourlyRate Decimal [not null]
+  hourlyRateInCents Int [not null]
   bistro Bistro [not null]
   bistroUserPositions BistroUserPosition [not null]
 

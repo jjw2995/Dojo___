@@ -7,18 +7,18 @@ export const positionRouter = createTRPCRouter({
     .input(
       z.object({
         postionName: z.string().min(1),
-        hourlyRate: z.number().min(0),
-        positionTipPercent: z.number().min(0).max(100),
+        hourlyRateInCents: z.number().int().min(0),
+        positionTipPercent: z.number().int().min(0).max(100),
       })
     )
     .mutation(({ ctx, input }) => {
-      const { hourlyRate, positionTipPercent, postionName } = input;
+      const { hourlyRateInCents, positionTipPercent, postionName } = input;
       // ctxprisma.
       return ctx.prisma.position.create({
         data: {
           name: postionName,
           bistroId: ctx.session.bistroId,
-          hourlyRate,
+          hourlyRateInCents,
           positionTipPercent,
         },
       });
