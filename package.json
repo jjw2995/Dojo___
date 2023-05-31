@@ -25,6 +25,7 @@
     "@trpc/next": "^10.18.0",
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
+    "daisyui": "^2.52.0",
     "leaflet": "^1.9.3",
     "next": "^13.2.4",
     "next-auth": "^4.21.0",

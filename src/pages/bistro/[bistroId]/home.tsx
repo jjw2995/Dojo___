@@ -28,7 +28,6 @@ const Home: NextPage = (p) => {
 
   return (
     <>
-      {curBUser.isMod && <InviteLink bistroId={curBUser.bistroId} />}
       <div className="m-2 space-y-3 ">
         <div>
           <span className="text-lg font-bold">Members</span>
@@ -57,27 +56,6 @@ const Home: NextPage = (p) => {
           <Positions />
         </div>
       </div>
-    </>
-  );
-};
-
-const InviteLink = ({ bistroId }: { bistroId: string | undefined }) => {
-  return (
-    <>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          void navigator.clipboard.writeText(
-            `${window ? window.location.origin : ""}${
-              LINKS.withBistroId(bistroId!).invite
-            }`
-          );
-          alert("invite link has been copied");
-        }}
-        className="m-2 rounded p-1 font-semibold text-slate-500 outline active:bg-slate-200"
-      >
-        copy invite link
-      </button>
     </>
   );
 };

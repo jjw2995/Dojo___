@@ -55,3 +55,7 @@ _Powered by [T3 Stack](https://create.t3.gg/), [Nominatim](https://nominatim.org
   - [ ] tipForm equation keyboard
 - [ ] Tip
 - [ ] Menu
+
+# TODO
+
+- [ ] change protectedBistroMember procedure to take in explicit bistroId (hard to understand implicit query param parsing at the API-end)

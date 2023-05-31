@@ -15,6 +15,8 @@ import React, {
 import { LINKS } from "~/utils/links";
 
 function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
+  // {curBUser.isMod && <InviteLink bistroId={curBUser.bistroId} />}
+
   // const withAuth = <P extends Object>(Component: React.ComponentType<P>) => {
   const Wrapper = (props: P) => {
     const router = useRouter();
@@ -41,36 +43,6 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
 
     return authorized ? (
       <>
-        <div className=" flex h-12 items-center justify-between bg-gradient-to-b from-slate-100 p-2">
-          <FontAwesomeIcon icon={faBarsStaggered} className="basis-1/12" />
-
-          <FontAwesomeIcon
-            icon={faHandsHolding}
-            className="text-slate-600"
-            size={"xl"}
-          />
-          {/* {data.user.image ? (
-              <img
-                loading="lazy"
-                src={data.user.image}
-                alt=""
-                className="w-4 basis-1/12 rounded-full "
-              />
-            ) : (
-             
-            )} */}
-          {data ? (
-            <button
-              className="font-bold"
-              onClick={() => {
-                void signOut({ callbackUrl: LINKS.base });
-              }}
-            >
-              <FontAwesomeIcon icon={faRightFromBracket} />
-              <span className="text-xs">logout</span>
-            </button>
-          ) : null}
-        </div>
         <Component {...props} />
       </>
     ) : (
