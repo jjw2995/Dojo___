@@ -1,4 +1,12 @@
-import { Dispatch, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
@@ -8,7 +16,7 @@ import { LatLngBoundsLiteral } from "leaflet";
 
 export type PlaceType = {
   place_id: number;
-  osm_id: number;
+  osm_id: string;
   osm_type: string;
   type: string;
   extratags?: {
@@ -50,7 +58,7 @@ const Bound = ({
   results,
   isReset,
 }: {
-  results: PlaceType[];
+  results: PlaceType[] | undefined;
   isReset: boolean;
 }) => {
   const [bounds, setBounds] = useState<LatLngBoundsLiteral>();
@@ -63,7 +71,7 @@ const Bound = ({
   };
 
   useEffect(() => {
-    if (results.length > 0) {
+    if (results && results.length > 0) {
       let bbox: [number, number, number, number] | undefined;
       results.forEach((v) => {
         if (!bbox) {
@@ -180,7 +188,49 @@ const PopupTriggerableMarker = ({
   );
 };
 
-const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
+export const searchOSMAPI = async (search: string) => {
+  const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
+
+  const params = {
+    q: search,
+    addressdetails: "1",
+    extratags: "1",
+    countrycodes: "ca",
+    limit: "20",
+    //   x1,y1, x2,y2
+    // viewbox: [-123, 45, -123 + 2, 45 + 2],
+    // bounded: "1",
+    format: "jsonv2",
+  };
+  const queryString = new URLSearchParams(params).toString();
+
+  return fetch(`${OSM_URL}${queryString}`, {
+    method: "GET",
+    redirect: "follow",
+  })
+    .then((res) => res.text())
+    .then((r) => {
+      return (JSON.parse(r) as PlaceType[]).map((v) => {
+        // v.osm_id
+        return { ...v, osm_id: String(v.osm_id) };
+      });
+      // why is below not autocasting to PlaceType?
+      // return JSON.parse(r) as PlaceType[];
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+  // console.log(res);
+
+  // return res;
+  // const searchHandler = () => {};
+};
+
+const SearchComp = ({
+  setResults,
+}: {
+  setResults: Dispatch<SetStateAction<PlaceType[]>>;
+}) => {
   const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
   const [search, setSearch] = useState("");
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -198,7 +248,6 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
       format: "jsonv2",
     };
     const queryString = new URLSearchParams(params).toString();
-    // console.log(`${OSM_URL}${queryString}`);
 
     fetch(`${OSM_URL}${queryString}`, {
       method: "GET",
@@ -206,9 +255,14 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
     })
       .then((res) => res.text())
       .then((r) => {
-        // console.log(JSON.parse(r));
-
-        setResults(JSON.parse(r) as PlaceType[]);
+        setResults(() => {
+          return (JSON.parse(r) as PlaceType[]).map((v) => {
+            // v.osm_id
+            return { ...v, osm_id: String(v.osm_id) };
+          });
+          // why is below not autocasting to PlaceType?
+          // return JSON.parse(r) as PlaceType[];
+        });
       })
       .catch((e) => {
         console.log(e);
@@ -243,9 +297,20 @@ const SearchComp = ({ setResults }: { setResults: Dispatch<PlaceType[]> }) => {
   );
 };
 
-const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
-  const [results, setResults] = useState<PlaceType[]>([]);
+/**
+ * This component uses Nominatim(OSM) api to search location and plots on a map
+ *
+ */
+const Map: FC<
+  PropsWithChildren & {
+    setPlace: Dispatch<PlaceType | undefined>;
+    places: PlaceType[] | undefined;
+  }
+> = ({ setPlace, places }) => {
+  // const [places, setResults] = useState<PlaceType[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+
+  // console.log(places);
 
   const currySelect = (i: number) => {
     return () => setSelectedIndex(i);
@@ -256,13 +321,11 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
 
   useEffect(() => {
     resetSelect();
-  }, [results]);
+  }, [places]);
 
   useEffect(() => {
-    // console.log(selectedIndex);
-
     if (selectedIndex >= 0) {
-      setPlace(results[selectedIndex]);
+      setPlace(places![selectedIndex]);
     } else {
       setPlace(undefined);
       resetSelect();
@@ -277,7 +340,7 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
         <li>search specific name of places</li>
         <li>replace hyphen &quot;-&quot; to space (ex. )</li>
       </ul>
-      <SearchComp setResults={setResults} />
+      {/* <SearchComp setResults={setResults} /> */}
       <div className={respWidth}>
         <MapContainer
           center={[45, -123]}
@@ -296,7 +359,7 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
             attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
           />
 
-          {results.map((r: PlaceType, i) => {
+          {places?.map((r: PlaceType, i) => {
             return (
               <PopupTriggerableMarker
                 key={i}
@@ -304,11 +367,11 @@ const Map = ({ setPlace }: { setPlace: Dispatch<PlaceType | undefined> }) => {
               />
             );
           })}
-          <Bound results={results} isReset={selectedIndex === undefined} />
+          <Bound results={places} isReset={selectedIndex === undefined} />
         </MapContainer>
       </div>
       <div className={`flex flex-wrap justify-center ${respWidth}`}>
-        {results.map((r, i) => {
+        {places?.map((r, i) => {
           return (
             <PlaceButton
               key={i}

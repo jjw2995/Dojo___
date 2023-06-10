@@ -92,6 +92,9 @@
 }
 
 @layer utilities {
+  .section-title {
+    @apply p-1 text-2xl font-bold text-slate-600;
+  }
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }

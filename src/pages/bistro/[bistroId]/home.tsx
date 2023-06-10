@@ -3,7 +3,7 @@ import React, { FC, PropsWithChildren, useContext, useState } from "react";
 import BistroLayout, {
   CurBistroUserContext,
 } from "~/components/layout/bistroLayout";
-import { RouterInputs, RouterOutputs, api } from "~/utils/api";
+import { RouterOutputs, api } from "~/utils/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -28,6 +28,34 @@ const Home: NextPage = (p) => {
 
   return (
     <>
+      <div
+      // className="flex flex-col items-center"
+      >
+        <div
+        // className="flex w-full max-w-lg flex-col border-opacity-50"
+        >
+          <div
+          // className="card rounded-box grid h-20 place-items-center bg-base-300"
+          >
+            content
+          </div>
+          <div className="divider"></div>
+          <div
+          // className="card rounded-box grid h-20 place-items-center bg-base-300"
+          >
+            content
+          </div>
+        </div>
+        <div className="flex w-full max-w-lg flex-col border-opacity-50">
+          <div className="card rounded-box grid h-20 place-items-center bg-base-300">
+            content
+          </div>
+          <div className="divider"></div>
+          <div className="card rounded-box grid h-20 place-items-center bg-base-300">
+            content
+          </div>
+        </div>
+      </div>
       <div className="m-2 space-y-3 ">
         <div>
           <span className="text-lg font-bold">Members</span>

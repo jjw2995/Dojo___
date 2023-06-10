@@ -10,12 +10,21 @@ model Bistro {
   bistroUser BistroUser[]
   positions  Position[]
 
-  osm_id           Int           @db.UnsignedInt
-  osm_type         String        @default("")
-  osm_display_name String        @default("")
-  osm_lat          String        @default("")
-  osm_lon          String        @default("")
-  PendingJoin      PendingJoin[]
+  osm_id           String?
+  osm_type         String?
+  osm_display_name String?
+  osm_lat          Float?
+  osm_lon          Float?
+
+  amenity      String?
+  house_number String?
+  road         String?
+  suburb       String?
+  city         String?
+  state        String?
+  country      String?
+
+  PendingJoin PendingJoin[]
 
   @@unique([name])
   @@index([osm_type, osm_id])
@@ -136,7 +145,7 @@ model User {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  previewFeatures = ["fullTextSearch", "fullTextIndex", "orderByNulls"]
 }
 
 generator dbml {

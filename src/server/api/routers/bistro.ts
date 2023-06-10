@@ -11,11 +11,13 @@ export const bistroRouter = createTRPCRouter({
   searchByOSM: protectedProcedure
     .input(
       z.object({
-        osm_id: z.number().optional(),
+        osm_id: z.string().optional(),
         osm_type: z.string().optional(),
       })
     )
     .query(({ ctx, input: { osm_id, osm_type } }) => {
+      console.log("\n\n" + osm_id, osm_type + "\n\n");
+
       return ctx.prisma.bistro.findMany({
         where: {
           osm_id,
@@ -27,7 +29,7 @@ export const bistroRouter = createTRPCRouter({
   searchByName: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(3).max(150),
+        name: z.string().min(1).max(150),
       })
     )
     .query(({ ctx, input: { name } }) => {
@@ -36,8 +38,7 @@ export const bistroRouter = createTRPCRouter({
         .filter((v) => v !== "")
         .map((v) => `*${v}*`)
         .join(" ");
-      // console.log(sear);
-      // console.log(name.split(" "));
+      // console.log("\n" + name + "\n");
 
       return ctx.prisma.bistro.findMany({
         where: {
@@ -111,20 +112,31 @@ export const bistroRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(3).max(50),
-        osm_id: z.number().optional(),
+
+        osm_id: z.string().optional(),
         osm_type: z.string().optional(),
         osm_display_name: z.string().optional(),
-        osm_lat: z.string().optional(),
-        osm_lon: z.string().optional(),
+        osm_lat: z.number().optional(),
+        osm_lon: z.number().optional(),
+
+        // amenity house_number road suburb city state country
+        amenity: z.string().optional(),
+        house_number: z.string().optional(),
+        road: z.string().optional(),
+        suburb: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        country: z.string().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
       return ctx.prisma.bistroUser.create({
         data: {
           user: { connect: { id: ctx.session.user.id } },
-          bistro: { create: { ...input } },
+          bistro: { create: input },
           authority: "MODERATOR",
         },
+        include: { bistro: {} },
       });
     }),
 

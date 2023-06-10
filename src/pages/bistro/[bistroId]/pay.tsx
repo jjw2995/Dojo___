@@ -16,4 +16,5 @@ const Tip: React.FC = () => {
   return <></>;
 };
 
+// export default Pay;
 export default bistroLayout(Pay);

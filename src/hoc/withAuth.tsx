@@ -1,18 +1,10 @@
-import {
-  faBarsStaggered,
-  faHandsHolding,
-  faRightFromBracket,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Menu } from "@headlessui/react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, {
   type ComponentType,
   type PropsWithChildren,
   useEffect,
 } from "react";
-import { LINKS } from "~/utils/links";
 
 function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
   // {curBUser.isMod && <InviteLink bistroId={curBUser.bistroId} />}

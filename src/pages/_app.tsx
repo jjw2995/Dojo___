@@ -22,7 +22,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="select-none">
+      <main>
         <Component {...pageProps} />
       </main>
     </SessionProvider>

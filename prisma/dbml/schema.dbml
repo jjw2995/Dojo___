@@ -10,11 +10,18 @@ Table Bistro {
   tipForms TipForm [not null]
   bistroUser BistroUser [not null]
   positions Position [not null]
-  osm_id Int [not null]
-  osm_type String [not null, default: '']
-  osm_display_name String [not null, default: '']
-  osm_lat String [not null, default: '']
-  osm_lon String [not null, default: '']
+  osm_id String
+  osm_type String
+  osm_display_name String
+  osm_lat Float
+  osm_lon Float
+  amenity String
+  house_number String
+  road String
+  suburb String
+  city String
+  state String
+  country String
   PendingJoin PendingJoin [not null]
 }
 
