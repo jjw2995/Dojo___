@@ -76,7 +76,7 @@ const Home: NextPage = (p) => {
               )}
             </div>
             <div>
-              <Popover.Panel className="absolute z-10 rounded bg-white outline">
+              <Popover.Panel className="absolute rounded bg-white outline">
                 <CreatePostitionWizard />
               </Popover.Panel>
             </div>

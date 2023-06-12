@@ -32,7 +32,7 @@ export const bistroRouter = createTRPCRouter({
         name: z.string().min(1).max(150),
       })
     )
-    .query(({ ctx, input: { name } }) => {
+    .mutation(({ ctx, input: { name } }) => {
       const sear = name
         .split(" ")
         .filter((v) => v !== "")

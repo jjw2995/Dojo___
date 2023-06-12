@@ -24,13 +24,15 @@ const TopNavBar: FC = () => {
   const router = useRouter();
   const bistroUser = useContext(CurBistroUserContext);
 
+  // add white transition below navbar
+  // bg-transparent  bg-gradient-to-b from-white
   return (
-    <div className="z-50 mb-16">
-      <div className="navbar fixed top-0 z-50 bg-base-100">
+    <div className="z-50 mb-10">
+      <div className="navbar min-h-8 fixed top-0 z-50 m-0 bg-white p-0 px-2 ">
         <div className="navbar-start">
           {bistroUser ? (
             <div
-              className="w-9"
+              className="w-6"
               onClick={() => {
                 router.push(LINKS.bistro);
               }}
@@ -61,7 +63,7 @@ const TopNavBar: FC = () => {
                 stroke="currentColor"
                 strokeWidth={1.5}
                 viewBox="0 0 24 24"
-                className="w-10"
+                className="w-8"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
               >
@@ -74,25 +76,22 @@ const TopNavBar: FC = () => {
             </a>
           )}
         </div>
-        <div className="navbar-center">
-          <FontAwesomeIcon
-            icon={faHandsHolding}
-            fill="none"
-            className="h-12 w-12 text-slate-600"
-            size={"2xl"}
-          />
-          {/* <a className="btn-ghost btn text-xl normal-case">daisyUI</a> */}
-        </div>
+        <FontAwesomeIcon
+          icon={faHandsHolding}
+          fill="none"
+          className="navbar-center h-6 w-6 text-slate-600"
+          // size={"1x"}
+        />
         <div className="navbar-end">
           <div className="dropdown-end dropdown">
             <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
-              <div className="w-9 rounded-full">
+              <div className="avatar w-6 rounded-full">
                 {bistroUser && bistroUser.user.image ? (
                   <img
                     loading="lazy"
                     src={bistroUser.user.image}
                     alt=""
-                    className="w-4 basis-1/12 rounded-full "
+                    className="w-6 basis-1/12 rounded-full "
                   />
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -103,7 +102,7 @@ const TopNavBar: FC = () => {
             </label>
             <ul
               tabIndex={0}
-              className="dropdown-content menu rounded-box menu-compact mt-3  bg-base-100 p-2 shadow"
+              className="menu-compact dropdown-content menu rounded-box mt-3  bg-base-100 p-2 shadow"
             >
               {bistroUser ? (
                 <li>
@@ -142,7 +141,7 @@ const TopNavBar: FC = () => {
                   <svg
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     viewBox="0 0 24 24"
                     className="w-6 items-center"
                     xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +156,45 @@ const TopNavBar: FC = () => {
                   Logout
                 </a>
               </li>
+              <li>
+                <a
+                  onClick={() => {
+                    if (window) window.my_modal_2.showModal();
+                  }}
+                >
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                    className="w-6 items-center"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                    />
+                  </svg>
+                  Help
+                </a>
+              </li>
             </ul>
+            <dialog id="my_modal_2" className="modal">
+              <form method="dialog" className="modal-box text-center">
+                <div className="text-lg">
+                  Tap on Section Titles to get Hints
+                </div>
+                <div className="mt-2">
+                  (ex. <span className="section-title">Bistros</span>,{" "}
+                  <span className="section-title">Search & Create</span>)
+                </div>
+              </form>
+              <form method="dialog" className="modal-backdrop">
+                <button>close</button>
+              </form>
+            </dialog>
           </div>
         </div>
       </div>

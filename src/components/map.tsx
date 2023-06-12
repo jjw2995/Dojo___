@@ -2,7 +2,6 @@ import {
   Dispatch,
   FC,
   PropsWithChildren,
-  SetStateAction,
   useEffect,
   useRef,
   useState,
@@ -13,8 +12,9 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { FitBoundsOptions } from "leaflet";
 import { LatLngBoundsLiteral } from "leaflet";
+import { getNameLocReg } from "~/utils/name";
 
-export type PlaceType = {
+export type Place = {
   place_id: number;
   osm_id: string;
   osm_type: string;
@@ -58,7 +58,7 @@ const Bound = ({
   results,
   isReset,
 }: {
-  results: PlaceType[] | undefined;
+  results: Place[] | undefined;
   isReset: boolean;
 }) => {
   const [bounds, setBounds] = useState<LatLngBoundsLiteral>();
@@ -113,59 +113,42 @@ const PlaceButton = ({
   setSelected,
   isEnabled,
   resetSelected,
+  className,
 }: {
-  place: PlaceType;
+  place: Place;
   setSelected: () => void;
   isEnabled: boolean;
   resetSelected: () => void;
+  className?: string;
 }) => {
-  const { address, display_name } = place;
-
-  const { amenity, country, road, state, house_number, city, postcode } =
-    address;
+  const { name, location, region } = getNameLocReg(place);
 
   return (
-    <button
-      className={`m-1 w-64 rounded p-1 text-xs font-light outline outline-slate-500 ${
+    <div
+      className={`card m-[0.125rem] w-[95%] p-[0.1em] pl-3 leading-tight shadow outline outline-1 ${
         isEnabled ? "bg-slate-300" : ""
-      }`}
+      } ${className}`}
       onClick={() => {
         isEnabled ? resetSelected() : setSelected();
       }}
     >
-      <PlaceItem place={place} />
-    </button>
-  );
-};
-
-export const PlaceItem = ({ place }: { place: PlaceType }) => {
-  const { address, display_name } = place;
-  const {
-    amenity,
-    country,
-    road,
-    state,
-    house_number,
-    city,
-    postcode,
-    county,
-  } = address;
-
-  return (
-    <>
-      <span className="text-sm font-bold text-slate-600">{amenity}</span>
-      <div>
-        {[house_number, road, county, city, "\n"].filter((v) => v).join(", ")}
+      <div className=" card-body gap-0 p-0 pb-1 leading-none ">
+        <div className="card-title p-[0.1em] text-base font-bold leading-none">
+          {name}
+          <div className="mt-1 text-xs font-thin leading-none">
+            <div>{location ?? "N/A"}</div>
+            <div>{region ?? "N/A"}</div>
+          </div>
+        </div>
       </div>
-      <div>{[state, country, postcode].filter((v) => v).join(", ")}</div>
-    </>
+    </div>
   );
 };
 
 const PopupTriggerableMarker = ({
   place,
 }: {
-  place: PlaceType & { isPopupOpen: boolean };
+  place: Place & { isPopupOpen: boolean };
 }) => {
   const markerRef = useRef(null);
   const map = useMap();
@@ -188,123 +171,14 @@ const PopupTriggerableMarker = ({
   );
 };
 
-export const searchOSMAPI = async (search: string) => {
-  const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
-
-  const params = {
-    q: search,
-    addressdetails: "1",
-    extratags: "1",
-    countrycodes: "ca",
-    limit: "20",
-    //   x1,y1, x2,y2
-    // viewbox: [-123, 45, -123 + 2, 45 + 2],
-    // bounded: "1",
-    format: "jsonv2",
-  };
-  const queryString = new URLSearchParams(params).toString();
-
-  return fetch(`${OSM_URL}${queryString}`, {
-    method: "GET",
-    redirect: "follow",
-  })
-    .then((res) => res.text())
-    .then((r) => {
-      return (JSON.parse(r) as PlaceType[]).map((v) => {
-        // v.osm_id
-        return { ...v, osm_id: String(v.osm_id) };
-      });
-      // why is below not autocasting to PlaceType?
-      // return JSON.parse(r) as PlaceType[];
-    })
-    .catch((e) => {
-      console.log(e);
-    });
-  // console.log(res);
-
-  // return res;
-  // const searchHandler = () => {};
-};
-
-const SearchComp = ({
-  setResults,
-}: {
-  setResults: Dispatch<SetStateAction<PlaceType[]>>;
-}) => {
-  const OSM_URL = "https://nominatim.openstreetmap.org/search.php?";
-  const [search, setSearch] = useState("");
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  const searchHandler = () => {
-    const params = {
-      q: search,
-      addressdetails: "1",
-      extratags: "1",
-      countrycodes: "ca",
-      limit: "20",
-      //   x1,y1, x2,y2
-      // viewbox: [-123, 45, -123 + 2, 45 + 2],
-      // bounded: "1",
-      format: "jsonv2",
-    };
-    const queryString = new URLSearchParams(params).toString();
-
-    fetch(`${OSM_URL}${queryString}`, {
-      method: "GET",
-      redirect: "follow",
-    })
-      .then((res) => res.text())
-      .then((r) => {
-        setResults(() => {
-          return (JSON.parse(r) as PlaceType[]).map((v) => {
-            // v.osm_id
-            return { ...v, osm_id: String(v.osm_id) };
-          });
-          // why is below not autocasting to PlaceType?
-          // return JSON.parse(r) as PlaceType[];
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  };
-
-  return (
-    <div className="m-2 flex items-center overflow-hidden rounded-sm text-center align-middle outline outline-slate-500">
-      <input
-        type="text"
-        placeholder="search place"
-        className="mx-1 w-32"
-        onChange={(e) => {
-          setSearch(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          // e.key
-          if (e.key === "Enter") {
-            void e.preventDefault;
-            btnRef.current?.click();
-          }
-        }}
-      />
-      <button
-        className="px-2 text-lg font-semibold outline outline-slate-500 active:bg-slate-400"
-        onClick={searchHandler}
-        ref={btnRef}
-      >
-        search
-      </button>
-    </div>
-  );
-};
-
 /**
  * This component uses Nominatim(OSM) api to search location and plots on a map
  *
  */
 const Map: FC<
   PropsWithChildren & {
-    setPlace: Dispatch<PlaceType | undefined>;
-    places: PlaceType[] | undefined;
+    setPlace: Dispatch<Place | undefined>;
+    places: Place[] | undefined;
   }
 > = ({ setPlace, places }) => {
   // const [places, setResults] = useState<PlaceType[]>([]);
@@ -336,41 +210,40 @@ const Map: FC<
 
   return (
     <div className="flex flex-col place-items-center">
-      <ul>
-        <li>search specific name of places</li>
-        <li>replace hyphen &quot;-&quot; to space (ex. )</li>
-      </ul>
-      {/* <SearchComp setResults={setResults} /> */}
-      <div className={respWidth}>
-        <MapContainer
-          center={[45, -123]}
-          zoom={3}
-          worldCopyJump
-          className="aspect-[4/3] rounded"
-          maxZoom={18}
-          minZoom={3}
-          maxBounds={[
-            [-180, -360],
-            [180, 360],
-          ]}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
-          />
-
-          {places?.map((r: PlaceType, i) => {
-            return (
-              <PopupTriggerableMarker
-                key={i}
-                place={{ ...r, isPopupOpen: i === selectedIndex }}
-              />
-            );
-          })}
-          <Bound results={places} isReset={selectedIndex === undefined} />
-        </MapContainer>
+      <div className="p-1 text-xs text-slate-400">
+        replace hyphen (&quot;-&quot;) to space
       </div>
-      <div className={`flex flex-wrap justify-center ${respWidth}`}>
+      {/* <div className={respWidth}> */}
+      <MapContainer
+        center={[45, -123]}
+        zoom={3}
+        worldCopyJump
+        className="aspect-[4/3] w-[90%] rounded lg:max-w-xl"
+        maxZoom={18}
+        minZoom={3}
+        maxBounds={[
+          [-180, -360],
+          [180, 360],
+        ]}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="http://osm.org/copyright%22%3EOpenStreetMap</a> contributors'
+        />
+
+        {places?.map((r: Place, i) => {
+          return (
+            <PopupTriggerableMarker
+              key={i}
+              place={{ ...r, isPopupOpen: i === selectedIndex }}
+            />
+          );
+        })}
+        <Bound results={places} isReset={selectedIndex === undefined} />
+      </MapContainer>
+      <div
+        className={`justify-center ${respWidth} justify-content-center flex  h-24 flex-col items-center overflow-scroll overscroll-x-none first:pt-4	`}
+      >
         {places?.map((r, i) => {
           return (
             <PlaceButton
@@ -390,7 +263,3 @@ const Map: FC<
 };
 
 export default Map;
-
-//  later for user location based nearby places
-//  <Marker position={[49.5, -122.5]} icon={icon}></Marker>
-//  <Marker position={[49, -123.5]} icon={icon} />;
