@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  MouseEventHandler,
+  PropsWithChildren,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import dynamic from "next/dynamic";
 
@@ -15,6 +22,7 @@ import { BottomNav } from "~/components/bottomNav";
 import TopNavBar from "~/components/topNavbar";
 import { Place } from "~/components/map";
 import { getNameLocReg } from "~/utils/name";
+import { useRouter } from "next/router";
 
 type Bistro = RouterOutputs["bistro"]["getAllUserIsPartOf"][number];
 
@@ -27,16 +35,17 @@ const CONTAINER = "mx-5 mt-1 h-[20%]";
 const BistroItem: FC<
   PropsWithChildren & {
     bistro: Bistro;
-    onBistroClick?: (bistro: Bistro) => void;
+    onClick?: MouseEventHandler<HTMLDivElement>;
     className?: string;
   }
-> = ({ bistro, children, onBistroClick, className = "" }) => {
+> = ({ bistro, children, onClick, className = "" }) => {
   const { name, location, region } = getNameLocReg(bistro);
   console.log(getNameLocReg(bistro));
 
   return (
     <div
-      className={`card my-[0.12rem] w-[95%] p-1 pl-3 leading-tight shadow outline outline-1 ${className}`}
+      onClick={onClick}
+      className={`item-w card my-[0.12rem] p-1 pl-3 leading-tight shadow outline outline-1 ${className}`}
     >
       <div className=" card-body gap-0 p-0 pb-1 leading-none ">
         {children}
@@ -54,6 +63,7 @@ const BistroItem: FC<
 
 const MemberedBistros = () => {
   const ctx = api.useContext();
+  const router = useRouter();
 
   const { data: memberedBistros } = api.bistro.getAllUserIsPartOf.useQuery();
   const { mutate: deleteBistro } = api.bistro.delete.useMutation({
@@ -89,13 +99,22 @@ const MemberedBistros = () => {
         Bistros
       </div>
 
-      <div className="no-scrollbar flex max-h-24 flex-col content-center items-center overflow-x-scroll overscroll-none	">
+      <div className="no-scrollbar flex flex-col content-center items-center overflow-y-scroll overscroll-none p-2">
         {bistros().map((elem) => {
           return (
             <BistroItem
               bistro={elem}
               key={elem.id}
-              className={elem.isPending ? "text-slate-400 outline-1 " : ""}
+              className={
+                elem.isPending
+                  ? "text-slate-400 outline-1 "
+                  : "active:bg-slate-100"
+              }
+              onClick={() => {
+                if (!elem.isPending) {
+                  router.push(LINKS.withBistroId(elem.id).home);
+                }
+              }}
             >
               <div className="card-actions justify-end text-slate-800">
                 <div className="absolute flex flex-col content-center justify-center justify-items-center">
@@ -278,7 +297,7 @@ const SearchJoinCreate = () => {
                 }}
               />
               <button
-                className="btn-square btn-sm btn"
+                className="btn-sm btn-square btn"
                 ref={btnRef}
                 onClick={() => {
                   getPlaces();
@@ -332,17 +351,17 @@ const CreateWizard = ({ place }: { place: Place | undefined }) => {
   return (
     <>
       <div className="section-title">Create</div>
-      <div className="flex flex-col items-center justify-items-center">
-        <div className="form-control w-full max-w-xs">
+      <div className="mx-2 flex flex-col items-center justify-items-center">
+        <div className="form-control w-[16rem] ">
           <input
             type="text"
-            value={name ? name : undefined}
+            value={name ? name : ""}
             placeholder="new bistro name"
             onChange={(e) => {
               e.preventDefault();
               setInput(e.target.value);
             }}
-            className="input-bordered input input-sm w-full max-w-xs"
+            className="input-bordered input input-sm"
           />
           <label className="label">
             <span className="label-text-alt font-semibold">
@@ -399,13 +418,13 @@ const useJoin = () => {
 
 const Bistro = () => {
   return (
-    <>
+    <div className="flex flex-col items-center ">
       <TopNavBar />
-      <div className=" flex flex-col">
+      <div className="rw pt-12 ">
         <MemberedBistros />
         <SearchJoinCreate />
       </div>
-    </>
+    </div>
   );
 };
 

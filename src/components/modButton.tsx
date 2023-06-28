@@ -12,5 +12,5 @@ export const ModButton: React.FC<ButtonProps> = (props) => {
   const { children, ...rest } = props;
   const bUser = useContext(CurBistroUserContext);
 
-  return bUser.isMod ? <button {...rest}>{children}</button> : null;
+  return bUser && bUser.isMod ? <button {...rest}>{children}</button> : null;
 };

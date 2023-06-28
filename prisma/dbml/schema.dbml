@@ -48,14 +48,12 @@ Table TipForm {
 
 Table Tip {
   id String [pk]
+  name String [not null]
   tipFormId String [not null]
   date DateTime [not null]
   total Decimal [not null]
+  flatEquation String [not null]
   tipForm TipForm [not null]
-
-  indexes {
-    (date, tipFormId) [unique]
-  }
 }
 
 Table BistroUser {
@@ -93,7 +91,7 @@ Table Position {
   bistroId String [not null]
   name String [not null]
   positionTipPercent Int [not null, default: 0]
-  hourlyRateInCents Int [not null]
+  hourlyRate Float [not null]
   bistro Bistro [not null]
   bistroUserPositions BistroUserPosition [not null]
 

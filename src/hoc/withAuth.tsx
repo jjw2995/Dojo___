@@ -33,13 +33,7 @@ function withAuth<P extends PropsWithChildren>(Component: ComponentType<P>) {
       return <>Loading app...</>;
     }
 
-    return authorized ? (
-      <>
-        <Component {...props} />
-      </>
-    ) : (
-      <>redirecting to login...</>
-    );
+    return authorized ? <Component {...props} /> : <>redirecting to login...</>;
   };
   return Wrapper;
 }

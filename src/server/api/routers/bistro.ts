@@ -111,14 +111,12 @@ export const bistroRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(3).max(50),
-
+        name: z.string(),
         osm_id: z.string().optional(),
         osm_type: z.string().optional(),
         osm_display_name: z.string().optional(),
         osm_lat: z.number().optional(),
         osm_lon: z.number().optional(),
-
         // amenity house_number road suburb city state country
         amenity: z.string().optional(),
         house_number: z.string().optional(),
@@ -133,7 +131,7 @@ export const bistroRouter = createTRPCRouter({
       return ctx.prisma.bistroUser.create({
         data: {
           user: { connect: { id: ctx.session.user.id } },
-          bistro: { create: input },
+          bistro: { create: { ...input, name: input.name } },
           authority: "MODERATOR",
         },
         include: { bistro: {} },

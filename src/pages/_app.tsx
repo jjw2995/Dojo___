@@ -15,6 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
     <SessionProvider session={session}>
       <Head>
         <title>Dojo</title>
+
         <meta name="description" content="for servers, made by a server" />
         <meta
           name="viewport"

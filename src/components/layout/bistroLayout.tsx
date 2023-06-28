@@ -47,10 +47,13 @@ const BistroLayout = <P extends PropsWithChildren>(
       <CurBistroUserContext.Provider
         value={{ ...bUser, isMod: bUser.authority === "MODERATOR" }}
       >
-        <TopNavBar />
-        <BottomNav bistroId={bUser.bistroId} />
-
-        <Component {...props} />
+        <div className="rw flex flex-col ">
+          <TopNavBar />
+          <div className="pt-16">
+            <Component {...props} />
+          </div>
+          <BottomNav bistroId={bUser.bistroId} />
+        </div>
       </CurBistroUserContext.Provider>
     ) : null;
   };

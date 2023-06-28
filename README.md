@@ -36,8 +36,7 @@ _Powered by [T3 Stack](https://create.t3.gg/), [Nominatim](https://nominatim.org
 - [x] OSM search
 - [x] integrate map
   - [x] map marker
-  - [x] auto zoom on found places
-- [ ] make UI more pleasing (combine create namefield & search)
+  - [x] auto zoom on selected place
 
 #### **/bistro/[bistroId]/Home**
 
@@ -45,14 +44,16 @@ _Powered by [T3 Stack](https://create.t3.gg/), [Nominatim](https://nominatim.org
   - [x] create & delete
   - [x] view
   - [x] assign/remove user
-  - [ ] update
-- [ ] a
+  - [x] update
+    - [ ] set user tip %
+
+position tip % and within position tip %
 
 #### **/bistro/[bistroId]/pay**
 
-- [ ] tipForm CRUD
+- [ ] tipForm CRUD (single form)
   - [ ] add variables
-  - [ ] tipForm equation keyboard
+  - [ ] tipForm equation keyboard (numbers, tip variables)
 - [ ] Tip
 - [ ] Menu
 

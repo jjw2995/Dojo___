@@ -65,15 +65,18 @@ model TipForm {
 
 // daily-tip-total
 model Tip {
-  id        String @id @default(cuid())
+  id        String @id @unique @default(cuid())
+  name      String
   tipFormId String
 
-  date    DateTime @db.Time
+  date         DateTime @db.Time
+  total        Decimal  @db.Decimal(10, 2)
   // maybe: add latex formated equation
-  total   Decimal  @db.Decimal(10, 2)
-  tipForm TipForm  @relation(fields: [tipFormId], references: [id])
+  flatEquation String
+  // flatVar
+  tipForm      TipForm  @relation(fields: [tipFormId], references: [id])
 
-  @@unique([date, tipFormId])
+  // @@unique([date, name])
 }
 
 model BistroUser {
@@ -109,7 +112,7 @@ model Position {
   bistroId            String
   name                String
   positionTipPercent  Int                  @default(0) @db.UnsignedTinyInt
-  hourlyRateInCents   Int
+  hourlyRate          Float
   bistro              Bistro               @relation(fields: [bistroId], references: [id])
   bistroUserPositions BistroUserPosition[]
 

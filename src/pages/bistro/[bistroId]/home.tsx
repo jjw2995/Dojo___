@@ -6,11 +6,7 @@ import BistroLayout, {
 import { RouterOutputs, api } from "~/utils/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTimesCircle,
-  faUserPlus,
-  faPlusCircle,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { Popover } from "@headlessui/react";
 import { LINKS } from "~/utils/links";
@@ -26,57 +22,41 @@ const Home: NextPage = (p) => {
 
   const curBUser = useContext(CurBistroUserContext);
 
-  return (
+  return curBUser ? (
     <>
-      <div
-      // className="flex flex-col items-center"
-      >
-        <div
-        // className="flex w-full max-w-lg flex-col border-opacity-50"
-        >
-          <div
-          // className="card rounded-box grid h-20 place-items-center bg-base-300"
-          >
-            content
-          </div>
-          <div className="divider"></div>
-          <div
-          // className="card rounded-box grid h-20 place-items-center bg-base-300"
-          >
-            content
-          </div>
-        </div>
-        <div className="flex w-full max-w-lg flex-col border-opacity-50">
-          <div className="card rounded-box grid h-20 place-items-center bg-base-300">
-            content
-          </div>
-          <div className="divider"></div>
-          <div className="card rounded-box grid h-20 place-items-center bg-base-300">
-            content
-          </div>
-        </div>
-      </div>
       <div className="m-2 space-y-3 ">
         <div>
           <span className="text-lg font-bold">Members</span>
-
           {curBUser.isMod && <PendingMembers />}
           <Members />
         </div>
-        <div>
+        <div className="">
           <Popover className="relative">
             <div className="flex text-lg font-bold ">
               Positions
-              {curBUser.isMod && (
+              {curBUser && curBUser.isMod && (
                 <>
                   <Popover.Button>
-                    <FontAwesomeIcon icon={faPlusCircle} />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="mx-1 h-5 w-5 rounded-full font-semibold outline"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
                   </Popover.Button>
                 </>
               )}
             </div>
             <div>
-              <Popover.Panel className="absolute rounded bg-white outline">
+              <Popover.Panel className="rounded outline">
                 <CreatePostitionWizard />
               </Popover.Panel>
             </div>
@@ -85,7 +65,7 @@ const Home: NextPage = (p) => {
         </div>
       </div>
     </>
-  );
+  ) : null;
 };
 
 type PendingUser = RouterOutputs["bistro"]["getPendingUsers"][number];
@@ -138,7 +118,7 @@ const Members = () => {
     <div className="font  text-base">
       {bistroUsers && (
         <SideScrollDiv>
-          {[...bistroUsers, ...bistroUsers, ...bistroUsers].map((v, i) => {
+          {[...bistroUsers].map((v, i) => {
             return (
               <div key={i} className="m-1 flex rounded outline">
                 <BistroUser bistroUser={v} />
@@ -163,7 +143,7 @@ const Members = () => {
 const CreatePostitionWizard = () => {
   const initState = {
     postionName: "",
-    hourlyRateInCents: 0,
+    hourlyRate: 0,
     positionTipPercent: 0,
   };
   const [position, setPosition] = useState(initState);
@@ -178,44 +158,40 @@ const CreatePostitionWizard = () => {
 
   return (
     <div className="mx-2">
-      <span className="text-xs font-semibold">create new position</span>
+      <div className="py-2 font-semibold">create new position</div>
       <div>
         <div className="flex place-content-between rounded pb-3">
-          <div className="w-1/4">
-            <input
-              type="text"
-              className="focus:ouline-0 decoration-slate-400 placeholder:text-base placeholder-shown:underline"
-              placeholder="name"
-              value={position.postionName}
-              onChange={(e) => {
-                e.preventDefault();
-                setPosition((prev) => {
-                  return { ...prev, postionName: e.target.value };
-                });
-              }}
-            />
-            {/* <span className="absolute  text-xs">name</span> */}
-          </div>
+          <input
+            type="text"
+            className="w-1/4 p-1"
+            placeholder="name"
+            value={position.postionName}
+            onChange={(e) => {
+              e.preventDefault();
+              setPosition((prev) => {
+                return { ...prev, postionName: e.target.value };
+              });
+            }}
+          />
+          {/* <span className="absolute  text-xs">name</span> */}
           <input
             type="number"
-            className="w-1/5"
+            className="w-1/5 p-1"
             placeholder="$/hr"
-            value={
-              position.hourlyRateInCents === 0 ? "" : position.hourlyRateInCents
-            }
+            value={position.hourlyRate === 0 ? "" : position.hourlyRate}
             onChange={(e) => {
               e.preventDefault();
               setPosition((prev) => {
                 return {
                   ...prev,
-                  hourlyRateInCents: Number(e.target.value),
+                  hourlyRate: Number(e.target.value),
                 };
               });
             }}
           />
           <input
             type="number"
-            className="w-1/5"
+            className="w-1/5 p-1"
             placeholder="tip ratio"
             value={
               position.positionTipPercent === 0
@@ -232,22 +208,20 @@ const CreatePostitionWizard = () => {
               });
             }}
           />
-          <div className="items-center justify-center rounded font-medium outline">
-            <button
-              onClick={() => {
-                const { hourlyRateInCents, positionTipPercent, postionName } =
-                  position;
-                mutate({
-                  hourlyRateInCents,
-                  positionTipPercent,
-                  postionName,
-                });
-                setPosition({ ...initState });
-              }}
-            >
-              create
-            </button>
-          </div>
+          <button
+            className="content-center rounded p-1 px-2 text-center text-slate-950 outline transition active:scale-95 active:bg-slate-200 active:transition-transform"
+            onClick={() => {
+              const { hourlyRate, positionTipPercent, postionName } = position;
+              mutate({
+                hourlyRate: Number(hourlyRate * 100),
+                positionTipPercent,
+                postionName,
+              });
+              setPosition({ ...initState });
+            }}
+          >
+            create
+          </button>
         </div>
       </div>
     </div>
@@ -295,7 +269,7 @@ const Position = ({ position }: { position: PositionType }) => {
 
   const updateRate = (num: number) => {
     setUpdateValue((r) => {
-      return { ...r, hourlyRateInCents: num };
+      return { ...r, hourlyRate: num };
     });
   };
   const updateTipPerc = (num: number) => {
@@ -304,13 +278,13 @@ const Position = ({ position }: { position: PositionType }) => {
     });
   };
 
-  // console.log(updatedValue);
-
   return (
     <div className="rounded border-2 shadow">
       <div className="m-1 flex justify-between">
         {/* <div className="flex place-content-between content-between justify-between"> */}
-        {curBUser.isMod && <PopoverAssignUser positionId={updateValue.id} />}
+        {curBUser && curBUser.isMod && (
+          <PopoverAssignUser positionId={updateValue.id} />
+        )}
         <div className="flex w-full justify-around text-sm">
           <div className=" font-bold">{updateValue.name}</div>
 
@@ -318,9 +292,9 @@ const Position = ({ position }: { position: PositionType }) => {
             $
             <OnClickShowInput
               update={updateRate}
-              init={Number(updateValue.hourlyRateInCents)}
+              init={Number(updateValue.hourlyRate)}
             >
-              {Number(updateValue.hourlyRateInCents)}
+              {Number(updateValue.hourlyRate)}
             </OnClickShowInput>
             /hr
           </div>
@@ -335,7 +309,7 @@ const Position = ({ position }: { position: PositionType }) => {
           </div>
         </div>
         <ModButton
-          className="content-center justify-center font-medium"
+          className="btn-primary btn content-center justify-center font-medium"
           onClick={() => {
             deletePosition({ positionId: updateValue.id });
           }}
@@ -463,7 +437,20 @@ const PopoverAssignUser = ({ positionId }: { positionId: string }) => {
             className="m-1 cursor-default rounded-full bg-slate-300 bg-transparent px-1 outline focus:outline-2 focus:outline-black"
             disabled={unassignedBistroUsers.length < 1}
           >
-            <FontAwesomeIcon icon={faUserPlus} size={"xs"} />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
+            </svg>
           </Popover.Button>
           {/* <Popover.Panel className="absolute left-1/4 z-10 max-w-[100%] -translate-x-1/4 flex-col rounded bg-slate-200"> */}
           <Popover.Panel className="absolute left-0 w-72 bg-slate-200">
