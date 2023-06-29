@@ -112,7 +112,7 @@ const MemberedBistros = () => {
               }
               onClick={() => {
                 if (!elem.isPending) {
-                  router.push(LINKS.withBistroId(elem.id).home);
+                  void router.push(LINKS.withBistroId(elem.id).home);
                 }
               }}
             >
@@ -175,7 +175,7 @@ const searchOSMAPI = async (search: string) => {
   })
     .then((res) => res.text())
     .then((r) => {
-      return JSON.parse(r).map((v) => {
+      return (JSON.parse(r) as Place[]).map((v) => {
         return {
           ...v,
           osm_id: String(v.osm_id),
@@ -202,7 +202,7 @@ const SearchJoinCreate = () => {
 
   const getPlaces = () => {
     if (search) {
-      searchOSMAPI(search).then((r) => {
+      void searchOSMAPI(search).then((r) => {
         setGotPlaces(r ? r : undefined);
       });
     }
@@ -220,7 +220,7 @@ const SearchJoinCreate = () => {
   // console.log("bistroByName: ", bistroByName, place);
 
   const getMergedBistros = () => {
-    let visited = new Set();
+    const visited = new Set();
     return [
       ...(bistroByName ? bistroByName : []),
       ...(bistroByOSM ? bistroByOSM : []),
@@ -239,7 +239,7 @@ const SearchJoinCreate = () => {
 
   useEffect(() => {
     if (place) {
-      fetchByOSM();
+      void fetchByOSM();
     }
   }, [place]);
 

@@ -25,22 +25,24 @@ const Main = ({
       </div>
       <span className="text-center font-semibold text-slate-700 ">start</span>
       <div className="flex  flex-col ">
-        {Object.values(providers).map(({ id, name }) => {
-          return (
-            <button
-              key={id}
-              className="btn-outline btn m-1 min-w-fit"
-              onClick={() => void signIn(id, { callbackUrl: LINKS.bistro })}
-            >
-              <img
-                src={`https://authjs.dev/img/providers/${id}.svg`}
-                alt=""
-                className="m-1 w-7 p-1"
-              />
-              Sign in with {name}
-            </button>
-          );
-        })}
+        {Object.values(providers).map(
+          ({ id, name }: { id: string; name: string }) => {
+            return (
+              <button
+                key={id}
+                className="btn-outline btn m-1 min-w-fit"
+                onClick={() => void signIn(id, { callbackUrl: LINKS.bistro })}
+              >
+                <img
+                  src={`https://authjs.dev/img/providers/${id}.svg`}
+                  alt=""
+                  className="m-1 w-7 p-1"
+                />
+                Sign in with {name}
+              </button>
+            );
+          }
+        )}
       </div>
     </div>
   );

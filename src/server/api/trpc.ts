@@ -65,7 +65,6 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   if (index && urlTokens && urlTokens.length > index) {
     bistroId = urlTokens[index + 1];
   }
-
   return createInnerTRPCContext({ session, bistroId });
 };
 

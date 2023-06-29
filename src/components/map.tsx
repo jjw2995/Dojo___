@@ -88,7 +88,7 @@ const Bound = ({
         }
       });
 
-      const [x1, x2, y1, y2] = bbox!;
+      const [x1, x2, y1, y2] = bbox;
       const xy1xy2: LatLngBoundsLiteral = [
         [x1, y1],
         [x2, y2],
@@ -199,7 +199,7 @@ const Map: FC<
 
   useEffect(() => {
     if (selectedIndex >= 0) {
-      setPlace(places![selectedIndex]);
+      setPlace(places[selectedIndex]);
     } else {
       setPlace(undefined);
       resetSelect();

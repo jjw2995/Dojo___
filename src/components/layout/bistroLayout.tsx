@@ -10,7 +10,7 @@ import TopNavBar from "../topNavbar";
 const useInviteLink = (bistroId: string) => {
   void navigator.clipboard.writeText(
     `${window ? window.location.origin : ""}${
-      LINKS.withBistroId(bistroId!).invite
+      LINKS.withBistroId(bistroId).invite
     }`
   );
   alert("invite link has been copied");

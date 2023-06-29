@@ -32,11 +32,12 @@ const config = {
   },
 };
 
-// module.exports = config;
-module.exports = {
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: path.join(__dirname, "tsconfig.json"),
-  },
-  plugins: ["@typescript-eslint"],
-};
+module.exports = config;
+
+// module.exports = {
+//   parser: "@typescript-eslint/parser",
+//   parserOptions: {
+//     project: path.join(__dirname, "tsconfig.json"),
+//   },
+//   plugins: ["@typescript-eslint"],
+// };

@@ -9,10 +9,10 @@ import {
 import { LINKS } from "~/utils/links";
 import { signOut } from "next-auth/react";
 
-const useInviteLink = (bistroId: string) => {
+const inviteLink = (bistroId: string) => {
   void navigator.clipboard.writeText(
     `${window ? window.location.origin : ""}${
-      LINKS.withBistroId(bistroId!).invite
+      LINKS.withBistroId(bistroId).invite
     }`
   );
   alert("invite link has been copied");
@@ -34,7 +34,7 @@ const TopNavBar: FC = () => {
           <div
             className="w-6"
             onClick={() => {
-              router.push(LINKS.bistro);
+              void router.push(LINKS.bistro);
             }}
           >
             <svg
@@ -108,7 +108,7 @@ const TopNavBar: FC = () => {
               <li>
                 <button
                   onClick={() => {
-                    useInviteLink(bistroUser.bistroId);
+                    inviteLink(bistroUser.bistroId);
                   }}
                 >
                   <svg
