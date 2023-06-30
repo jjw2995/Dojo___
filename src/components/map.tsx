@@ -157,7 +157,7 @@ const PopupTriggerableMarker = ({
 
   useEffect(() => {
     if (isPopupOpen) {
-      map.flyTo([lat, lon], 14, { duration: 1.5 });
+      map.flyTo([lat, lon], 8, { duration: 1.5 });
       // markerRef.current.openPopup();
     }
   }, [isPopupOpen]);
@@ -242,7 +242,7 @@ const Map: FC<
         <Bound results={places} isReset={selectedIndex === undefined} />
       </MapContainer>
       <div
-        className={`justify-center ${respWidth} justify-content-center flex  h-24 flex-col items-center overflow-scroll overscroll-x-none first:pt-4	`}
+        className={`justify-center ${respWidth} no-scrollbar justify-content-center flex  h-24 flex-col items-center overflow-scroll overscroll-x-none`}
       >
         {places?.map((r, i) => {
           return (
@@ -254,6 +254,7 @@ const Map: FC<
               setSelected={currySelect(i)}
               isEnabled={selectedIndex === i}
               resetSelected={resetSelect}
+              className={i === 0 ? "mt-[8rem]" : ""}
             />
           );
         })}

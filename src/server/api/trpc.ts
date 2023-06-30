@@ -198,31 +198,3 @@ export const protectedBistroMemberProcedure = (
     });
   });
 };
-
-// /** Reusable middleware that enforces users are logged in before running the procedure. */
-// const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-//   if (!ctx.session || !ctx.session.user) {
-//     throw new TRPCError({ code: "UNAUTHORIZED" });
-//   }
-//   return next({
-//     ctx: {
-//       // infers the `session` as non-nullable
-//       session: { ...ctx.session, user: ctx.session.user },
-//     },
-//   });
-// });
-
-// const enforceUserisBistroMember = t.procedure.use(enforceUserIsAuthed)..middleware(async ({ ctx, next }) => {
-//   if (!ctx.bistroId) {
-//     throw new TRPCError({
-//       code: "BAD_REQUEST",
-//       message: "bistroId not found in URL",
-//     });
-//   }
-//   const bistroUser = prisma.bistroUser
-//   return next({ ctx });
-// });
-
-// const enforceUserisBistroMod = t.middleware(({ ctx, next }) => {
-//   return next({ ctx });
-// });

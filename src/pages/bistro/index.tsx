@@ -248,7 +248,7 @@ const SearchJoinCreate = () => {
       <CreateWizard place={place} />
       <div className={CONTAINER}>
         <div className="section-title">Search</div>
-        <div className="justify-content-center flex max-h-24 flex-col items-center overflow-scroll overscroll-none">
+        <div className="justify-content-center no-scrollbar flex max-h-24 flex-col items-center overflow-scroll overscroll-none">
           {getMergedBistros().map((bistro, i) => {
             return (
               <BistroItem bistro={bistro} key={i}>
@@ -297,7 +297,7 @@ const SearchJoinCreate = () => {
                 }}
               />
               <button
-                className="btn-sm btn-square btn"
+                className="btn-square btn-sm btn"
                 ref={btnRef}
                 onClick={() => {
                   getPlaces();
