@@ -61,7 +61,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   // ADD-ON: if bistro/[bistroId]/*, attach bistroId for processing later
   const urlTokens = req.headers.referer?.split("/");
   const index = urlTokens?.findIndex((elem) => elem === "bistro");
-  let bistroId;
+  let bistroId = "";
   if (index && urlTokens && urlTokens.length > index) {
     bistroId = urlTokens[index + 1];
   }
@@ -156,8 +156,10 @@ export const protectedBistroMemberProcedure = (
   } = { isModerator: false }
 ) => {
   const { isModerator, errMessage } = opts;
-  return protectedProcedure.use(async ({ ctx, next }) => {
-    if (!ctx.bistroId) {
+  return protectedProcedure.use(async ({ ctx, next, ...rest }) => {
+    console.log(rest);
+
+    if (ctx.bistroId === "") {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "bistroId not found in URL",
